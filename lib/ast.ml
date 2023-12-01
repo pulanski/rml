@@ -1,9 +1,3 @@
-type location = {
-  file: string option;
-  line: int;
-  col: int;
-}
-
 type program = func list
 
 and func = {
@@ -14,12 +8,14 @@ and func = {
 and prototype = {
   name: string;
   params: string list;
+  (* params: (string * data_type) list; *)
 }
 
 and stmt =
   | Expr of expr
   | Return of expr option
-  | VarDecl of string * tensor_type option * expr
+  | VarDecl of string * expr
+  (* | VarDecl of string * data_type option * expr *)
 
 and expr =
   | Number of float
@@ -27,12 +23,22 @@ and expr =
   | Call of string * expr list
   | BinOp of binop * expr * expr
   | Tensor of expr list
+  | Literal of data_type
 
 and binop =
   | Add
   | Sub
   | Mul
   | Div
+
+and data_type =
+  | Int
+  | Float
+  | String
+  | Bool
+  | TTensor of tensor_type
+  | Array of data_type
+  | Custom of string  (* For user-defined types *)
 
 and tensor_type = {
   shape: shape;

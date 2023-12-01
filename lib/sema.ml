@@ -20,7 +20,8 @@ and analyze_stmt = function
   | Expr expr -> analyze_expr expr
   | Return None -> ()
   | Return (Some expr) -> analyze_expr expr
-  | VarDecl (_, _, expr) -> analyze_expr expr
+  | VarDecl (_, expr) -> analyze_expr expr
+  (* | VarDecl (_, _, expr) -> analyze_expr expr *)
 
 and analyze_expr = function
   | Number _ -> ()
@@ -30,3 +31,4 @@ and analyze_expr = function
       analyze_expr lhs;
       analyze_expr rhs
   | Tensor elements -> List.iter analyze_expr elements
+  | Literal _ -> ()

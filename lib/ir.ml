@@ -2,11 +2,22 @@ type ir_shape = int list
 
 type ir_program = ir_func list
 
-and ir_func = {
+and ir_param = {
   name: string;
-  params: string list;
+  param_type: string;
+}
+
+and ir_func = {
+  func_name: string;
+  params: ir_param list;
   body: ir_stmt list;
 }
+
+(* and ir_func = {
+  name: string;
+  params: ir_expr list;
+  body: ir_stmt list;
+} *)
 
 and ir_stmt =
   | IRExpr of ir_expr
@@ -18,7 +29,8 @@ and ir_expr =
   | IRVariable of string
   | IRCall of string * ir_expr list
   | IRBinOp of ir_binop * ir_expr * ir_expr
-  | IRTensor of ir_shape * ir_expr list (* Include shape in tensor variant *)
+  | IRTensor of ir_shape * ir_expr list
+  | IRLiteral of ir_shape * float list
 
 and ir_binop =
   | IRAdd

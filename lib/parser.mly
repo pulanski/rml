@@ -42,16 +42,17 @@ stmt_list:
 |  { [] }
 
 stmt:
-| VAR IDENT opt_tensor_type EQUAL expr { VarDecl ($2, $3, $5) }
+| VAR IDENT EQUAL expr { VarDecl ($2, $4) }
+// | VAR IDENT opt_tensor_type EQUAL expr { VarDecl ($2, $3, $5) }
 | RETURN expr { Return (Some $2) }
 | expr { Expr ($1) }
 
 opt_tensor_type:
 | (* empty *) { None }
-| tensor_type { Some ({ shape = $1 }) }
+| tensor_type { Some (TTensor $1) }
 
 tensor_type:
-| LANGLE shape RANGLE { $2 }
+| LANGLE shape RANGLE { { shape = $2 } }
 
 shape:
 | NUMBER { [int_of_float $1] }
