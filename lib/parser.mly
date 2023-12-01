@@ -9,6 +9,10 @@
 %token <string> IDENT
 %token EOF
 
+%left PLUS MINUS        /* lowest precedence */
+%left TIMES DIV         /* medium precedence */
+%nonassoc UMINUS        /* highest precedence */
+
 %start <Ast.program> program
 %type <Ast.expr> expr
 %type <Ast.func> func

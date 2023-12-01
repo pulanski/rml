@@ -12,16 +12,9 @@ and func = {
 }
 
 and prototype = {
-  plocation: location;
   name: string;
   params: string list;
 }
-
-and tensor_type = {
-  shape: shape;
-}
-
-and shape = int list
 
 and stmt =
   | Expr of expr
@@ -40,3 +33,9 @@ and binop =
   | Sub
   | Mul
   | Div
+
+and tensor_type = {
+  shape: shape;
+}
+
+and shape = int list

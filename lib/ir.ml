@@ -1,3 +1,5 @@
+type ir_shape = int list
+
 type ir_program = ir_func list
 
 and ir_func = {
@@ -16,7 +18,7 @@ and ir_expr =
   | IRVariable of string
   | IRCall of string * ir_expr list
   | IRBinOp of ir_binop * ir_expr * ir_expr
-  | IRTensor of ir_expr list
+  | IRTensor of ir_shape * ir_expr list (* Include shape in tensor variant *)
 
 and ir_binop =
   | IRAdd

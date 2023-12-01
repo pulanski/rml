@@ -6,6 +6,21 @@
  (inline_tests))
 
 (menhir
- (modules parser))
+ (modules parser)
+ (flags -la 2 -lc 2 -O 2 --comment --dump-resolved))
 
 (ocamllex lexer)
+
+; TODO: use similar to this for tests
+; and general experiments
+; (rule
+;  (with-stdout-to
+;   calc.out
+;   (with-stdin-from
+;    calc.in
+;    (run ./calc.exe))))
+
+; (rule
+;   (alias test)
+;   (action (diff calc.exp calc.out))
+; )

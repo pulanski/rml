@@ -1,6 +1,13 @@
 open Ast
 open Ir
 
+(* Calculate the shape of a tensor *)
+let rec calculate_shape (elements: expr list) : ir_shape =
+  match elements with
+  | [] -> []
+  | Tensor elems :: _ -> List.length elements :: calculate_shape elems
+  | _ -> [List.length elements]  (* Assuming all elements at this level are scalars *)
+
 let rec generate_ir (program: program) : ir_program =
   ir_of_program program
 and ir_of_program (program: program) : ir_program =
@@ -24,7 +31,8 @@ and ir_of_expr (expression: expr) : ir_expr =
   | Variable x -> IRVariable x
   | Call (name, args) -> IRCall (name, List.map ir_of_expr args)
   | BinOp (op, lhs, rhs) -> IRBinOp (ir_of_binop op, ir_of_expr lhs, ir_of_expr rhs)
-  | Tensor elements -> IRTensor (List.map ir_of_expr elements)
+  | Tensor elements -> let shape = calculate_shape elements in
+      IRTensor (shape, List.map ir_of_expr elements)
 
 and ir_of_binop (binop: binop) : ir_binop =
   match binop with
