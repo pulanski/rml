@@ -11,17 +11,22 @@ let reset_counter () =
   counter := 0
 
 let rec emit_mlir_expr = function
-  | IRNumber n -> Printf.sprintf "%f" n
+  | IRU8 x -> string_of_int x
+  | IRU16 x -> string_of_int x
+  | IRU32 x -> string_of_int x
+  | IRU64 x -> string_of_int x
+  | IRI8 x -> string_of_int x
+  | IRI16 x -> string_of_int x
+  | IRI32 x -> string_of_int x
+  | IRI64 x -> string_of_int x
+  | IRF32 x -> string_of_float x
+  | IRF64 x -> string_of_float x
   | IRVariable x -> x
   | IRCall (func_name, args) ->
       let args_str = String.concat ", " (List.map emit_mlir_expr args) in
       Printf.sprintf "%s(%s)" func_name args_str
   | IRBinOp (op, lhs, rhs) ->
       Printf.sprintf "%s %s, %s : f64" (emit_op op) (emit_mlir_expr lhs) (emit_mlir_expr rhs)
-  (* | IRTensor elements ->
-      let elements_str = String.concat ", " (List.map emit_mlir_expr elements) in
-      (* get dims *)
-      Printf.sprintf "rml.constant dense<[%s]> : tensor<ixjxf64>" elements_str *)
   | IRTensor (shape, elements) ->
     let shape_str = String.concat "x" (List.map string_of_int shape) in
     let elements_str = String.concat ", " (List.map emit_mlir_expr elements) in

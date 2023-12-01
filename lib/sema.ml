@@ -20,11 +20,10 @@ and analyze_stmt = function
   | Expr expr -> analyze_expr expr
   | Return None -> ()
   | Return (Some expr) -> analyze_expr expr
-  | VarDecl (_, expr) -> analyze_expr expr
+  | VarDecl (_, _, _, expr) -> analyze_expr expr
   (* | VarDecl (_, _, expr) -> analyze_expr expr *)
 
 and analyze_expr = function
-  | Number _ -> ()
   | Variable _ -> ()  (* Here you might want to check if variable is declared *)
   | Call (_, args) -> List.iter analyze_expr args
   | BinOp (_, lhs, rhs) ->

@@ -25,12 +25,23 @@ and ir_stmt =
   | IRVarDecl of string * ir_expr
 
 and ir_expr =
-  | IRNumber of float
+  | IRU8 of int
+  | IRU16 of int
+  | IRU32 of int
+  | IRU64 of int
+  | IRI8 of int
+  | IRI16 of int
+  | IRI32 of int
+  | IRI64 of int
+  | IRF32 of float
+  | IRF64 of float
+  | IRChar of char
+  | IRString of string
+  | IRBool of bool
   | IRVariable of string
   | IRCall of string * ir_expr list
   | IRBinOp of ir_binop * ir_expr * ir_expr
   | IRTensor of ir_shape * ir_expr list
-  | IRLiteral of ir_shape * float list
 
 and ir_binop =
   | IRAdd

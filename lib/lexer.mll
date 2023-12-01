@@ -4,7 +4,7 @@
 
 rule token = parse
   | [' ' '\t' '\r' '\n']  { token lexbuf }  (* Skip whitespace *)
-  | '#' [^ '\n']* '\n' { token lexbuf }  (* Skip comments *)
+  | '#' [^ '\n']* '\n'    { token lexbuf }  (* Skip comments *)
   | '+'                   { PLUS }
   | '-'                   { MINUS }
   | '*'                   { MULT }
@@ -18,11 +18,18 @@ rule token = parse
   | '{'                   { LBRACE }
   | '}'                   { RBRACE }
   | ';'                   { SEMICOLON }
+  | ':'                   { COLON }
   | '='                   { EQUAL }
   | ","                   { COMMA }
   | "return"              { RETURN }
-  | "def"                 { DEF }
+  | "if"                  { IF }
+  | "else"                { ELSE }
+  | "fn"                  { FN }
+  | "mut"                 { MUT }
+  | "u32"                 { U32 }
+  | "f32"                 { F32 }
   | "var"                 { VAR }
+  | "let"                 { LET }
   | ['0'-'9']+ as lxm     { NUMBER(float_of_string lxm) }
   | ['0'-'9']+ '.' ['0'-'9']* as lxm { NUMBER(float_of_string lxm) }
   | ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { IDENT(lxm) }

@@ -5,10 +5,7 @@ rml.func @multiply_transpose(arg0: tensor<*xf64>, arg1: tensor<*xf64>) {
 }
 
 rml.func @main() {
-  %0 = rml.constant dense<[rml.constant dense<[1.000000, 2.000000, 3.000000]> : tensor<3xf64>, rml.constant dense<[4.000000, 5.000000, 6.000000]> : tensor<3xf64>]> : tensor<2x3xf64>
-  %1 = rml.constant dense<[1.000000, 2.000000, 3.000000, 4.000000, 5.000000, 6.000000]> : tensor<6xf64>
-  %2 = multiply_transpose(a, b)
-  %3 = multiply_transpose(b, a)
-  print(d)
+  %0 = 2.
+  %1 = 3.
 }
 }

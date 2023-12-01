@@ -29,19 +29,35 @@ and ir_of_stmt (statement: stmt) : ir_stmt =
   match statement with
   | Expr expr -> IRExpr (ir_of_expr expr)
   | Return (Some expr) -> IRReturn (ir_of_expr expr)
-  | Return None -> IRReturn (IRNumber 0.0)
-  | VarDecl (name, expr) -> IRVarDecl (name, ir_of_expr expr)
+  | Return None -> IRReturn (IRU8 0)
+  | VarDecl (_, name, _, expr) -> IRVarDecl (name, ir_of_expr expr)
   (* | VarDecl (name, _, expr) -> IRVarDecl (name, ir_of_expr expr) *)
 
 and ir_of_expr (expression: expr) : ir_expr =
   match expression with
-  | Number n -> IRNumber n
-  | Variable x -> IRVariable x
+  | Variable name -> IRVariable name
   | Call (name, args) -> IRCall (name, List.map ir_of_expr args)
-  | BinOp (op, lhs, rhs) -> IRBinOp (ir_of_binop op, ir_of_expr lhs, ir_of_expr rhs)
-  | Tensor elements -> let shape = calculate_shape elements in
-      IRTensor (shape, List.map ir_of_expr elements)
-  | _ -> IRNumber 0.0 (* TODO: Handle other expressions (e.g. literals) *)
+  | BinOp (binop, left, right) -> IRBinOp (ir_of_binop binop, ir_of_expr left, ir_of_expr right)
+  | Tensor elements -> IRTensor (calculate_shape elements, List.map ir_of_expr elements)
+  | Literal x -> match x with
+    | U8 x -> IRU8 x
+    | U16 x -> IRU16 x
+    | U32 x -> IRU32 x
+    | U64 x -> IRU64 x
+    | I8 x -> IRI8 x
+    | I16 x -> IRI16 x
+    | I32 x -> IRI32 x
+    | I64 x -> IRI64 x
+    | F32 x -> IRF32 x
+    | F64 x -> IRF64 x
+    | Char x -> IRChar x
+    | String x -> IRString x
+    | Bool x -> IRBool x
+    | _ -> failwith "Not implemented"
+    (* | Array x -> IRArray x
+    | Custom x -> IRCustom x *)
+
+
 
 and ir_of_binop (binop: binop) : ir_binop =
   match binop with
@@ -49,8 +65,3 @@ and ir_of_binop (binop: binop) : ir_binop =
   | Sub -> IRSub
   | Mul -> IRMul
   | Div -> IRDiv
-
-  (* and ir_of_func (func: func) : ir_func =
-  { name = func.proto.name;
-    params = func.proto.params;
-    body = List.map ir_of_stmt func.body } *)

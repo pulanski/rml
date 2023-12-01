@@ -4,8 +4,9 @@
 
 %token <float> NUMBER
 %token PLUS MINUS MULT DIV LANGLE RANGLE
-%token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE SEMICOLON EQUAL COMMA
-%token RETURN DEF VAR
+%token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE SEMICOLON EQUAL COMMA COLON
+%token U32 F32
+%token RETURN FN VAR LET IF ELSE MUT
 %token <string> IDENT
 %token EOF
 
@@ -27,7 +28,7 @@ func_list:
 |  { [] }
 
 func:
-| DEF IDENT LPAREN params RPAREN block { { proto = { name = $2; params = $4 }; body = $6 } }
+| FN IDENT LPAREN params RPAREN block { { proto = { name = $2; params = $4 }; body = $6 } }
 
 params:
 | IDENT { [$1] }
@@ -42,8 +43,7 @@ stmt_list:
 |  { [] }
 
 stmt:
-| VAR IDENT EQUAL expr { VarDecl ($2, $4) }
-// | VAR IDENT opt_tensor_type EQUAL expr { VarDecl ($2, $3, $5) }
+| LET opt_mut IDENT opt_type EQUAL expr { VarDecl ($2, $3, $4, $6) }
 | RETURN expr { Return (Some $2) }
 | expr { Expr ($1) }
 
@@ -59,7 +59,7 @@ shape:
 | NUMBER COMMA shape { (int_of_float $1) :: $3 }
 
 expr:
-| NUMBER { Number $1 }
+| NUMBER { Literal (F32 $1) }
 | IDENT { Variable $1 }
 | IDENT LPAREN expr_list RPAREN { Call ($1, $3) }
 | LPAREN expr RPAREN { $2 }
@@ -69,6 +69,14 @@ expr:
 | expr DIV expr { BinOp (Div, $1, $3) }
 | LBRACKET tensor_list RBRACKET { Tensor ($2) }
 
+opt_mut:
+| MUT { Mutable }
+| { Immutable }
+
+opt_type:
+| COLON U32 { None } (* TODO: support other types *)
+| { None }
+
 tensor_list:
 | expr { [$1] }
 | expr COMMA tensor_list { $1 :: $3 }
@@ -77,7 +85,6 @@ expr_list:
 | expr { [$1] }
 | expr COMMA expr_list { $1 :: $3 }
 
-// tensorLiteral ::= [ literalList ] | number NOTE: [ ] means optional
 tensor_literal:
 | opt_literal_list { $1 }
 | NUMBER { [$1] }
@@ -86,7 +93,6 @@ opt_literal_list:
 | (* empty *) { [] }
 | literal_list { $1 }
 
-// literalList ::= tensorLiteral | tensorLiteral, literalList
 literal_list:
 | tensor_literal { $1 }
 | tensor_literal COMMA opt_literal_list { $1 :: $3 }
