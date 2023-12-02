@@ -9,5 +9,6 @@ enum Bar {
   B
 };
 int main() {
-  return 3.;
+  int e = 42.;
+  return e;
 }

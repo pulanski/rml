@@ -9,8 +9,8 @@ enum Bar {
 }
 
 fn main() -> u32 {
-    //     let e = 42;
-    //     return e;
+    let e = 42;
+    return e;
 } // TODO: improve scope analysis
 
 // fn main() -> void {

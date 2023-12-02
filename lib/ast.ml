@@ -1,5 +1,3 @@
-(* type program = func list *)
-
 type program = item list
 
 and item =
