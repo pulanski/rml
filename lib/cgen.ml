@@ -59,7 +59,6 @@ and emit_c_binop = function
   | IRGeq -> ">="
   (* Add cases for other binary operators *)
 
-
 let rec emit_c_stmt = function
   | IRExpr expr -> emit_c_expr expr ^ ";"
   | IRReturn expr -> "return " ^ emit_c_expr expr ^ ";"

@@ -15,6 +15,16 @@ and prototype = {
   return_type: ty;
 }
 
+and struct_def = {
+  struct_name: string;
+  fields: (string * ty) list;  (* Field name and its type *)
+}
+
+and enum_def = {
+  enum_name: string;
+  variants: (string * ty option) list;  (* Variant name and optional associated type *)
+}
+
 and stmt =
   | Expr of expr
   | Return of expr option
@@ -48,6 +58,8 @@ and expr =
   | Variable of string
   | Call of string * expr list
   (* | Call of expr * expr list  Function call with function expression and arguments *)
+  | StructInit of string * (string * expr) list  (* Struct name and field initializations *)
+  | EnumInit of string * string * expr option  (* Enum name, variant, and optional value *)
   | BinOp of binop * expr * expr
   | Tensor of expr list
   | Lambda of lambda  (* Lambda expression for anonymous functions *)
