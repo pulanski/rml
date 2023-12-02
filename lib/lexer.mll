@@ -28,6 +28,8 @@ rule token = parse
   | "if"                  { IF }
   | "else"                { ELSE }
   | "fn"                  { FN }
+  | "struct"              { STRUCT }
+  | "enum"                { ENUM }
   | "while"               { WHILE }
   | "for"                 { FOR }
   | "loop"                { LOOP }

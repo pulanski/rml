@@ -1,5 +1,12 @@
 open Ast
+
 module StringMap = Map.Make(String)
+
+type environment = {
+  vars: ty StringMap.t;
+  structs: struct_def StringMap.t;
+  enums: enum_def StringMap.t;
+}
 
 let data_type_to_ty = function
   | I8 _ -> IntTy
@@ -21,10 +28,9 @@ let data_type_to_ty = function
   | Custom _ -> CustomTy *)
   | _ -> failwith "Type not implemented"
 
-
 let rec type_of_expr env = function
   | Variable v ->
-      (try StringMap.find v env
+      (try StringMap.find v env.vars
        with Not_found -> failwith ("Unbound variable " ^ v))
   | Call (f, args) ->
       let arg_types = List.map (type_of_expr env) args in
@@ -38,11 +44,12 @@ let rec type_of_expr env = function
       | e::_ -> type_of_expr env e)
   | Literal l -> type_of_literal l
   | Lambda lambda -> type_of_lambda env lambda
+  | _ -> failwith "Type not implemented"
   (* Add other cases as necessary *)
 
 and type_of_call env f arg_types =
   let f_type =
-    try StringMap.find f env
+    try StringMap.find f env.vars
     with Not_found -> failwith ("Unbound function " ^ f)
   in
   match f_type with
@@ -55,6 +62,7 @@ and type_of_call env f arg_types =
       return_type
   | _ -> failwith (f ^ " is not a function")
 
+
 and type_of_binop env op lhs rhs =
   let lhs_type = type_of_expr env lhs in
   let rhs_type = type_of_expr env rhs in
@@ -62,22 +70,23 @@ and type_of_binop env op lhs rhs =
   | Add | Sub | Mul | Div | Mod ->
       if lhs_type <> IntTy || rhs_type <> IntTy then
         failwith "Type mismatch in arithmetic operation";
-      IntTy  (* Assuming these operations return an integer *)
+      IntTy
   | Eq | Neq | Lt | Gt | Leq | Geq ->
       if lhs_type <> rhs_type then
         failwith "Type mismatch in comparison operation";
-      BoolTy  (* Comparison operations return a boolean *)
+      BoolTy
   | And | Or ->
       if lhs_type <> BoolTy || rhs_type <> BoolTy then
         failwith "Type mismatch in boolean operation";
       BoolTy
   | _ -> failwith "Invalid binary operator"
 
-and type_of_lambda env { lparams; lbody } =
+and type_of_lambda _env { lparams = _; lbody = _ } =
   (* Implement type checking for lambda expressions *)
   (* Extend environment with lambda parameters and check body *)
-  let env' = List.fold_left (fun env (name, ty) -> StringMap.add name ty env) env lparams in
-  type_of_expr env' lbody
+  failwith "Lambda not implemented"
+  (* let env' = List.fold_left (fun env (name, ty) -> StringMap.add name ty env) env lparams in
+  type_of_expr env' lbody *)
 
 and type_of_literal = function
   | I8 _ -> IntTy
@@ -105,37 +114,68 @@ let rec analyze_program env = function
       analyze_func env func;
       analyze_program env rest
 
+and analyze_struct_def env struct_def =
+  (* Add struct definition to environment *)
+  { env with structs = StringMap.add struct_def.struct_name struct_def env.structs }
+
+and analyze_enum_def env enum_def =
+  (* Add enum definition to environment *)
+  { env with enums = StringMap.add enum_def.enum_name enum_def env.enums }
+
+and analyze_struct_init env struct_name _field_inits =
+  let _struct_def =
+    try StringMap.find struct_name env.structs
+    with Not_found -> failwith ("Undefined struct: " ^ struct_name)
+  in
+  failwith ("Struct initialization not implemented")
+  (* List.iter (fun (field_name, init_expr) ->
+    let field_type =
+      try List.assoc field_name struct_def.fields
+      with Not_found -> failwith ("Undefined field: " ^ field_name)
+    in
+    let init_type = type_of_expr env.vars init_expr in
+    if field_type <> init_type then
+      failwith ("Type mismatch in field initialization for " ^ field_name)
+  ) field_inits *)
+
+and analyze_enum_init env enum_name variant value_opt =
+  let enum_def =
+    try StringMap.find enum_name env.enums
+    with Not_found -> failwith ("Undefined enum: " ^ enum_name)
+  in
+  match List.assoc_opt variant enum_def.variants with
+  | Some expected_type_opt ->
+      (match expected_type_opt, value_opt with
+       | Some expected_type, Some value ->
+           let value_type = type_of_expr env value in
+           if expected_type <> value_type then
+             failwith ("Type mismatch in enum variant value for " ^ variant)
+       | None, None -> ()
+       | _ -> failwith ("Incorrect usage of enum variant " ^ variant))
+  | None -> failwith ("Undefined variant: " ^ variant)
+
 and analyze_stmt_list env stmts =
   List.iter (analyze_stmt env) stmts
 
+(* and update_env env name ty =
+  StringMap.add name ty env *)
 and update_env env name ty =
-  (* Update the environment with a new or modified variable *)
-  StringMap.add name ty env
+    (* Update the environment with a new or modified variable *)
+  { env with vars = StringMap.add name ty env.vars }
 
-and type_of_binop env op lhs rhs =
-  let lhs_type = type_of_expr env lhs in
-  let rhs_type = type_of_expr env rhs in
-  (* Check that lhs_type and rhs_type are appropriate for the operator op *)
-    match op with
-    | Add | Sub | Mul | Div | Mod ->
-        if lhs_type <> IntTy || rhs_type <> IntTy then failwith "Type mismatch in arithmetic operation"
-    | Eq | Neq | Lt | Gt | Leq | Geq ->
-        if lhs_type <> rhs_type then failwith "Type mismatch in comparison operation"
-    | And | Or ->
-        if lhs_type <> BoolTy || rhs_type <> BoolTy then failwith "Type mismatch in boolean operation"
-    | _ -> failwith "Invalid binary operator"
 
 and analyze_func env func =
-let { proto = { name = _; params; _ }; body } = func in
-  let env = List.fold_left (fun env (name, ty) -> StringMap.add name ty env) env params in
-  analyze_stmt_list env body;
+  let { proto = { name = _; params; _ }; body } = func in
+  let updated_env = List.fold_left (fun acc_env (name, ty) ->
+    update_env acc_env name ty) env params in
+  analyze_stmt_list updated_env body
   (* Optionally, check the return type of the function *)
 
 and analyze_stmt env = function
   | Expr expr -> ignore (type_of_expr env expr)
   | Return None -> ()
   | Return (Some expr) -> ignore (type_of_expr env expr)
-   | VarDecl (_mut, name, opt_type, expr) ->
+  | VarDecl (_mut, name, opt_type, expr) ->
       let expr_type = type_of_expr env expr in
       (match opt_type with
        | Some dt ->
@@ -165,7 +205,7 @@ and analyze_stmt env = function
 and analyze_expr env expr =
   match expr with
   | Variable v ->
-      ignore (try StringMap.find v env
+      ignore (try StringMap.find v env.vars
               with Not_found -> failwith ("Unbound variable " ^ v))
   | Call (f, args) ->
       let arg_types = List.map (type_of_expr env) args in
@@ -176,6 +216,11 @@ and analyze_expr env expr =
       ignore (List.map (analyze_expr env) elems)
   | Literal _ -> ()
   | Lambda lambda -> analyze_lambda env lambda
+  | _ -> failwith "Type not implemented"
+  (* | StructInit (struct_name, field_inits) ->
+      analyze_struct_init env struct_name field_inits
+  | EnumInit (enum_name, variant, value_opt) ->
+      analyze_enum_init env enum_name variant value_opt *)
   (* Add other cases as necessary *)
 
 and analyze_lambda env { lparams; lbody } =
@@ -183,18 +228,10 @@ and analyze_lambda env { lparams; lbody } =
   let env' = List.fold_left (fun env (name, ty) -> update_env env name ty) env lparams in
   analyze_expr env' lbody
 
-and type_of_call _env _f _arg_types =
-    (* TODO: Implement function call type checking, including higher-order functions *)
-    failwith "Function call type checking not implemented"
-    (* let f_type = type_of_expr env f in
-    match f_type with
-    | FuncTy (param_types, _return_type) ->
-        (* Check that arg_types match param_types *)
-        if List.length param_types <> List.length arg_types then failwith "Incorrect number of arguments";
-        List.iter2 (fun param_type arg_type ->
-            if param_type <> arg_type then failwith "Type mismatch in function call") param_types arg_types;
-    | _ -> failwith "Type mismatch in function call" *)
-
 let type_check_program program =
-  let env = StringMap.empty in
+  let env = {
+    vars = StringMap.empty;
+    structs = StringMap.empty;
+    enums = StringMap.empty;
+  } in
   analyze_program env program

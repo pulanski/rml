@@ -6,7 +6,7 @@
 %token PLUS MINUS MULT DIV LANGLE RANGLE
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE SEMICOLON EQUAL COMMA COLON RARROW
 %token U32 F32
-%token RETURN FN VAR LET IF ELSE MUT FOR WHILE BREAK CONTINUE IN MATCH CASE TRUE FALSE VOID BOOL LOOP
+%token RETURN FN VAR LET IF ELSE MUT FOR WHILE BREAK CONTINUE IN MATCH CASE TRUE FALSE VOID BOOL LOOP STRUCT ENUM
 %token <string> IDENT
 %token EOF
 
@@ -46,6 +46,29 @@ params:
 param:
 | IDENT COLON ty { ($1, $3) }
 | IDENT { ($1, IntTy) }
+
+struct_def:
+  | STRUCT IDENT LBRACE field_defs RBRACE { { struct_name = $2; fields = $4 } }
+
+field_defs:
+  | field_def COMMA field_defs { $1 :: $3 }
+  | field_def { [$1] }
+  |  { [] }
+
+field_def:
+  | IDENT COLON ty { ($1, $3) }
+
+enum_def:
+  | ENUM IDENT LBRACE variant_defs RBRACE { { enum_name = $2; variants = $4 } }
+
+variant_defs:
+  | variant_def COMMA variant_defs { $1 :: $3 }
+  | variant_def { [$1] }
+  |  { [] }
+
+variant_def:
+  | IDENT { ($1, None) }
+  // | IDENT OF ty { ($1, Some $3) } // TODO: figure out what we want syntax to be here
 
 ty:
 | U32 { IntTy }
@@ -120,6 +143,15 @@ expr:
 | expr LANGLE expr { BinOp (Lt, $1, $3) }
 | expr RANGLE expr { BinOp (Gt, $1, $3) }
 | LBRACKET tensor_list RBRACKET { Tensor ($2) }
+| IDENT LBRACE field_init_list RBRACE { StructInit ($1, $3) }
+
+field_init_list:
+  | field_init COMMA field_init_list { $1 :: $3 }
+  | field_init { [$1] }
+  |  { [] }
+
+field_init:
+  | IDENT EQUAL expr { ($1, $3) }
 
 opt_mut:
 | MUT { Mutable }

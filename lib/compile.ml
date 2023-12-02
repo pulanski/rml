@@ -1,6 +1,6 @@
 open Sema
 open Irgen
-open Codegen
+open Mlirgen
 open Jsgen
 open Cgen
 open Util
