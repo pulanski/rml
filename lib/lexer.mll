@@ -4,7 +4,9 @@
 
 rule token = parse
   | [' ' '\t' '\r' '\n']  { token lexbuf }  (* Skip whitespace *)
-  | '#' [^ '\n']* '\n'    { token lexbuf }  (* Skip comments *)
+  | "//" [^ '\n']* '\n'    { token lexbuf }  (* Skip comments *)
+  | "//!" [^ '\n']* '\n'  { token lexbuf }   (* Skip //! comments *)
+  | "/*"                  { comment lexbuf } (* Skip block comments *)
   | '+'                   { PLUS }
   | '-'                   { MINUS }
   | '*'                   { MULT }
@@ -28,6 +30,7 @@ rule token = parse
   | "fn"                  { FN }
   | "while"               { WHILE }
   | "for"                 { FOR }
+  | "loop"                { LOOP }
   | "in"                  { IN }
   | "break"               { BREAK }
   | "continue"            { CONTINUE }
@@ -52,3 +55,8 @@ rule token = parse
                    pos.pos_fname pos.pos_lnum (pos.pos_cnum - pos.pos_bol) in
     failwith (Printf.sprintf "Unrecognized character '%s' at %s" (Char.escaped char) pos_info)
   }
+
+and comment = parse
+  | "*/"            { token lexbuf }
+  | _               { comment lexbuf }
+  | eof             { failwith "Unclosed comment" }

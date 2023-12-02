@@ -37,6 +37,21 @@ and emit_c_binop = function
   | IRSub -> "-"
   | IRMul -> "*"
   | IRDiv -> "/"
+  | IRMod -> "%"
+  | IREq -> "=="
+  | IRNeq -> "!="
+  | IRLt -> "<"
+  | IRLte -> "<="
+  | IRGt -> ">"
+  | IRGte -> ">="
+  | IRAnd -> "&&"
+  | IROr -> "||"
+  | IRPow -> "^"
+  | IRXor -> "^"
+  | IRShl -> "<<"
+  | IRShr -> ">>"
+  | IRLeq -> "<="
+  | IRGeq -> ">="
   (* Add cases for other binary operators *)
 
 
@@ -53,7 +68,6 @@ let rec emit_c_stmt = function
       else
         let else_c = String.concat "\n  " (List.map emit_c_stmt else_stmts) in
         Printf.sprintf "if (%s) {\n  %s\n} else {\n  %s\n}" cond_c then_c else_c
-  (* | IRWhile (cond, body) -> *)
   | IRFor (name, expr, body) ->
       let expr_c = emit_c_expr expr in
       let body_c = String.concat "\n  " (List.map emit_c_stmt body) in
@@ -62,6 +76,14 @@ let rec emit_c_stmt = function
       let expr_c = emit_c_expr expr in
       let cases_c = String.concat "\n  " (List.map emit_c_case cases) in
       Printf.sprintf "switch (%s) {\n  %s\n}" expr_c cases_c
+  | IRWhile (cond, body) ->
+      let cond_c = emit_c_expr cond in
+      let body_c = String.concat "\n  " (List.map emit_c_stmt body) in
+      Printf.sprintf "while (%s) {\n  %s\n}" cond_c body_c
+  | IRLoop body ->
+      let body_c = String.concat "\n  " (List.map emit_c_stmt body) in
+      Printf.sprintf "while (true) {\n  %s\n}" body_c
+  (* | IRBreak -> "break;" *)
   (* Extend with more statement types as needed *)
 
 and emit_c_case case =
