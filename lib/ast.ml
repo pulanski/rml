@@ -11,7 +11,8 @@ and mutable_flag =
 
 and prototype = {
   name: string;
-  params: string list;
+  params: (string * ty) list;
+  (* TODO: *)
   (* params: (string * data_type) list; *)
   return_type: ty;
 }
@@ -28,9 +29,13 @@ and stmt =
 
 and ty =
   | VoidTy
+  | CharTy
+  | StringTy
   | IntTy
   | FloatTy
   | BoolTy
+  | TensorTy
+  | FuncTy of ty list * ty  (* Function type: list of argument types and return type *)
 
 and match_case =
   | Case of pattern * stmt list        (* case pattern -> block *)
@@ -44,9 +49,16 @@ and pattern =
 and expr =
   | Variable of string
   | Call of string * expr list
+  (* | Call of expr * expr list  Function call with function expression and arguments *)
   | BinOp of binop * expr * expr
   | Tensor of expr list
+  | Lambda of lambda  (* Lambda expression for anonymous functions *)
   | Literal of data_type
+
+and lambda = {
+  lparams: (string * ty) list;  (* Parameters with types *)
+  lbody: expr;                  (* Body of the lambda function *)
+}
 
 and binop =
   | Add
@@ -81,6 +93,7 @@ and data_type =
   | TTensor of tensor_type
   | Array of data_type
   | Custom of string  (* For user-defined types *)
+  | Function of prototype
 
 and tensor_type = {
   shape: shape;

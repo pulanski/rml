@@ -13,21 +13,26 @@ let rec generate_ir (program: program) : ir_program =
 and ir_of_program (program: program) : ir_program =
   List.map ir_of_func program
 
-and convert_param (param: string) : ir_param =
-  { name = param; param_type = IRIntTy }  (* Assuming default type as IRIntTy *)
 
 and ir_of_type (ty: ty) : ir_type =
   match ty with
   | IntTy -> IRIntTy
   | FloatTy -> IRFloatTy
   | VoidTy -> IRVoidTy
-  (* | CharTy -> IRCharTy *)
-  (* | StringTy -> IRStringTy *)
+  | CharTy -> IRCharTy
+  | StringTy -> IRStringTy
   | BoolTy -> IRBoolTy
-  (* | TensorTy -> IRTensorTy *)
+  | TensorTy -> IRTensorTy
+  | FuncTy _ -> IRFuncTy
+
+(* and ir_of_param (name, ty) : ir_param =
+  { name = name; param_type = ir_of_type ty } *)
+and ir_of_param ((name, ty): (string * ty)) : ir_param =
+  { name = name; param_type = ir_of_type ty }
+
 
 and ir_of_func (func: func) : ir_func =
-  { func_name = func.proto.name;  params = List.map convert_param func.proto.params; body = List.map ir_of_stmt func.body; return_type = ir_of_type func.proto.return_type }
+  { func_name = func.proto.name;  params = List.map ir_of_param func.proto.params; body = List.map ir_of_stmt func.body; return_type = ir_of_type func.proto.return_type }
 
 and ir_of_stmt (statement: stmt) : ir_stmt =
   match statement with
@@ -36,7 +41,6 @@ and ir_of_stmt (statement: stmt) : ir_stmt =
   | Return None -> IRReturn (IRU8 0)
   | VarDecl (_, name, _, expr) -> IRVarDecl (name, ir_of_expr expr)
   | If (cond, then_stmts, else_stmts) -> IRIf (ir_of_expr cond, List.map ir_of_stmt then_stmts, List.map ir_of_stmt else_stmts)
-  (* | While (cond, stmts) -> IRWhile (ir_of_expr cond, List.map ir_of_stmt stmts) *)
   | For (name, expr, body) -> IRFor (name, ir_of_expr expr, List.map ir_of_stmt body)
   | While (cond, body) -> IRWhile (ir_of_expr cond, List.map ir_of_stmt body)
   | Loop (body) -> IRLoop (List.map ir_of_stmt body)
@@ -49,7 +53,7 @@ and ir_of_expr (expression: expr) : ir_expr =
   | Call (name, args) -> IRCall (name, List.map ir_of_expr args)
   | BinOp (binop, left, right) -> IRBinOp (ir_of_binop binop, ir_of_expr left, ir_of_expr right)
   | Tensor elements -> IRTensor (calculate_shape elements, List.map ir_of_expr elements)
-  | Literal x -> match x with
+  | Literal x -> (match x with
     | U8 x -> IRU8 x
     | U16 x -> IRU16 x
     | U32 x -> IRU32 x
@@ -63,9 +67,10 @@ and ir_of_expr (expression: expr) : ir_expr =
     | Char x -> IRChar x
     | String x -> IRString x
     | Bool x -> IRBool x
-    | _ -> failwith "Not implemented"
     (* | Array x -> IRArray x
     | Custom x -> IRCustom x *)
+    | _ -> failwith "Not implemented")
+  | _ -> failwith "Not implemented"
 
 and ir_of_binop (binop: binop) : ir_binop =
   match binop with
@@ -83,15 +88,3 @@ and ir_of_binop (binop: binop) : ir_binop =
   | Geq -> IRGeq
   | And -> IRAnd
   | Or -> IROr
-
-(*
-    and ir_of_func (func: func) : ir_func =
-  let param_types = List.map (fun _ -> "tensor<*xf64>") func.proto.params in
-  let params_with_types = List.mapi
-    (fun i param -> { name = Printf.sprintf "arg%d" i; param_type = param })
-    param_types in
-  {
-    func_name = func.proto.name;
-    params = params_with_types;
-    body = List.map ir_of_stmt func.body
-  } *)

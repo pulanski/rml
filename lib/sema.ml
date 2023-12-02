@@ -45,3 +45,4 @@ and analyze_expr = function
       analyze_expr rhs
   | Tensor elements -> List.iter analyze_expr elements
   | Literal _ -> ()
+  | Lambda (_) -> failwith "Lambda not implemented"
