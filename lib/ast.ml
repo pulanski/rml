@@ -12,8 +12,6 @@ and mutable_flag =
 and prototype = {
   name: string;
   params: (string * ty) list;
-  (* TODO: *)
-  (* params: (string * data_type) list; *)
   return_type: ty;
 }
 

@@ -5,7 +5,8 @@ fn main() -> void {
 
     let a = 2;
     let b = 20;
-    let c = a + b;
+    // let c = a + b;
+    // TODO: add support for function calls
     // let d = c - foo();
 }
 
@@ -14,11 +15,10 @@ fn foo() -> u32 {
     let b = 20;
     let c = 3;
     let d = 17;
-    let e = c + d;
-    let f = a - b;
-    let g = f * e;
-
-    return g;
+    // let e = c + d;
+    // let f = a - b;
+    // let g = f * e;
+    // return g;
 }
 
 // while true {
