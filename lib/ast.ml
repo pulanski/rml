@@ -19,6 +19,18 @@ and stmt =
   | Expr of expr
   | Return of expr option
   | VarDecl of mutable_flag * string * data_type option * expr
+  | If of expr * stmt list * stmt list
+  | For of string * expr * stmt list
+  | Match of expr * match_case list
+
+and match_case =
+  | Case of pattern * stmt list        (* case pattern -> block *)
+
+and pattern =
+  | LiteralPattern of data_type
+  | VariablePattern of string
+  | TuplePattern of pattern list
+  | CustomPattern of string * pattern list  (* For matching user-defined types *)
 
 and expr =
   | Variable of string

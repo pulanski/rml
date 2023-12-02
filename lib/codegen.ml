@@ -48,12 +48,60 @@ and emit_op = function
   | IRMul -> "rml.mul"
   | IRDiv -> "rml.div"
 
-let emit_mlir_stmt = function
+let rec emit_mlir_stmt = function
   | IRExpr expr -> emit_mlir_expr expr
   | IRReturn expr -> "return " ^ emit_mlir_expr expr
   | IRVarDecl (_name, expr) ->
       let var_name = fresh_var () in
       Printf.sprintf "%s = %s" var_name (emit_mlir_expr expr)
+  | IRIf (cond, then_stmts, else_stmts) ->
+      let cond_ssa = emit_mlir_expr cond in
+      let then_str = String.concat "\n  " (List.map emit_mlir_stmt then_stmts) in
+      let else_str = String.concat "\n  " (List.map emit_mlir_stmt else_stmts) in
+      Printf.sprintf "if %s {\n  %s\n} else {\n  %s\n}" cond_ssa then_str else_str
+  (* | IrWhile (cond, body) ->
+      let cond_ssa = emit_mlir_expr cond in
+      let body_str = String.concat "\n  " (List.map emit_mlir_stmt body) in
+      Printf.sprintf "while %s {\n  %s\n}" cond_ssa body_str *)
+  | IRFor (name, expr, body) ->
+      let expr_ssa = emit_mlir_expr expr in
+      let body_str = String.concat "\n  " (List.map emit_mlir_stmt body) in
+      Printf.sprintf "for %s in %s {\n  %s\n}" name expr_ssa body_str
+  | IRMatch (expr, cases) ->
+      let expr_ssa = emit_mlir_expr expr in
+      let cases_str = String.concat "\n  " (List.map emit_mlir_case cases) in
+      Printf.sprintf "match %s {\n  %s\n}" expr_ssa cases_str
+
+and emit_mlir_case = function
+  | IRCase (pattern, stmts) ->
+      let pattern_str = emit_mlir_pattern pattern in
+      let stmts_str = String.concat "\n  " (List.map emit_mlir_stmt stmts) in
+      Printf.sprintf "%s {\n  %s\n}" pattern_str stmts_str
+
+and emit_mlir_pattern = function
+  | IRLiteralPattern expr -> emit_mlir_expr expr
+  | IRVariablePattern name -> name
+  | IRTuplePattern patterns ->
+      let patterns_str = String.concat ", " (List.map emit_mlir_pattern patterns) in
+      Printf.sprintf "(%s)" patterns_str
+  | IRCustomPattern (name, patterns) ->
+      let patterns_str = String.concat ", " (List.map emit_mlir_pattern patterns) in
+      Printf.sprintf "%s(%s)" name patterns_str
+  (* | IRWildcard -> "_"
+  | IRVarPattern name -> name
+  | IRConstPattern expr -> emit_mlir_expr expr
+  | IRBinOpPattern (op, lhs, rhs) ->
+      let lhs_ssa = emit_mlir_pattern lhs in
+      let rhs_ssa = emit_mlir_pattern rhs in
+      Printf.sprintf "%s %s %s" lhs_ssa (emit_op op) rhs_ssa
+  | IRCallPattern (func_name, args) ->
+      let args_str = String.concat ", " (List.map emit_mlir_pattern args) in
+      Printf.sprintf "%s(%s)" func_name args_str
+  | IRTensorPattern (shape, elements) ->
+    let shape_str = String.concat "x" (List.map string_of_int shape) in
+    let elements_str = String.concat ", " (List.map emit_mlir_pattern elements) in
+    Printf.sprintf "rml.constant dense<[%s]> : tensor<%sxf64>" elements_str shape_str
+  | _ -> failwith "not implemented" *)
 
 let emit_mlir_function func =
   reset_counter ();

@@ -17,6 +17,18 @@ and ir_stmt =
   | IRExpr of ir_expr
   | IRReturn of ir_expr
   | IRVarDecl of string * ir_expr
+  | IRIf of ir_expr * ir_stmt list * ir_stmt list  (* if condition then block else block *)
+  | IRFor of string * ir_expr * ir_stmt list       (* for variable in iterable do block *)
+  | IRMatch of ir_expr * ir_match_case list        (* match expression with cases *)
+
+and ir_match_case =
+  | IRCase of ir_pattern * ir_stmt list            (* case pattern -> block *)
+
+and ir_pattern =
+  | IRLiteralPattern of ir_expr
+  | IRVariablePattern of string
+  | IRTuplePattern of ir_pattern list
+  | IRCustomPattern of string * ir_pattern list    (* For matching user-defined types *)
 
 and ir_expr =
   | IRU8 of int

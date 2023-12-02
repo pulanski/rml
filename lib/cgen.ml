@@ -13,7 +13,7 @@ let rec emit_c_expr = function
   | IRF64 x -> string_of_float x
   | IRChar x -> "'" ^ Char.escaped x ^ "'"
   | IRString x -> "\"" ^ x ^ "\""
-  | IRBool x -> string_of_bool x
+  | IRBool x -> if x then "1" else "0"
   | IRVariable x -> x
   | IRCall (func_name, args) ->
       let args_c = String.concat ", " (List.map emit_c_expr args) in
@@ -34,13 +34,46 @@ and emit_c_binop = function
   (* Add cases for other binary operators *)
 
 
-let emit_c_stmt = function
+let rec emit_c_stmt = function
   | IRExpr expr -> emit_c_expr expr ^ ";"
   | IRReturn expr -> "return " ^ emit_c_expr expr ^ ";"
   | IRVarDecl (name, expr) ->
       "int " ^ name ^ " = " ^ emit_c_expr expr ^ ";"
+  | IRIf (cond, then_stmts, else_stmts) ->
+      let cond_c = emit_c_expr cond in
+      let then_c = String.concat "\n  " (List.map emit_c_stmt then_stmts) in
+      if List.length else_stmts = 0 then
+        Printf.sprintf "if (%s) {\n  %s\n}" cond_c then_c
+      else
+        let else_c = String.concat "\n  " (List.map emit_c_stmt else_stmts) in
+        Printf.sprintf "if (%s) {\n  %s\n} else {\n  %s\n}" cond_c then_c else_c
+  (* | IRWhile (cond, body) -> *)
+  | IRFor (name, expr, body) ->
+      let expr_c = emit_c_expr expr in
+      let body_c = String.concat "\n  " (List.map emit_c_stmt body) in
+      Printf.sprintf "for (int %s = 0; %s; %s++) {\n  %s\n}" name expr_c name body_c
+  | IRMatch (expr, cases) ->
+      let expr_c = emit_c_expr expr in
+      let cases_c = String.concat "\n  " (List.map emit_c_case cases) in
+      Printf.sprintf "switch (%s) {\n  %s\n}" expr_c cases_c
   (* Extend with more statement types as needed *)
 
+and emit_c_case case =
+  match case with
+  | IRCase (pattern, body) ->
+      let pattern_c = emit_c_pattern pattern in
+      let body_c = String.concat "\n  " (List.map emit_c_stmt body) in
+      Printf.sprintf "case %s:\n  %s\n  break;" pattern_c body_c
+
+and emit_c_pattern = function
+  | IRLiteralPattern expr -> emit_c_expr expr
+  | IRVariablePattern name -> name
+  | IRTuplePattern patterns ->
+      let patterns_c = String.concat ", " (List.map emit_c_pattern patterns) in
+      Printf.sprintf "(%s)" patterns_c
+  | IRCustomPattern (name, patterns) ->
+      let patterns_c = String.concat ", " (List.map emit_c_pattern patterns) in
+      Printf.sprintf "%s(%s)" name patterns_c
 
 let emit_c_function func =
   let params_str = String.concat ", " (List.map (fun p -> "int " ^ p.name) func.params) in

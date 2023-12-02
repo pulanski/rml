@@ -4,9 +4,9 @@
 
 %token <float> NUMBER
 %token PLUS MINUS MULT DIV LANGLE RANGLE
-%token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE SEMICOLON EQUAL COMMA COLON
+%token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE SEMICOLON EQUAL COMMA COLON RARROW
 %token U32 F32
-%token RETURN FN VAR LET IF ELSE MUT
+%token RETURN FN VAR LET IF ELSE MUT FOR WHILE BREAK CONTINUE IN MATCH CASE TRUE FALSE
 %token <string> IDENT
 %token EOF
 
@@ -39,13 +39,29 @@ block:
 | LBRACE stmt_list RBRACE { $2 }
 
 stmt_list:
-| stmt SEMICOLON stmt_list { $1 :: $3 }
+| stmt stmt_list { $1 :: $2 }
 |  { [] }
 
 stmt:
-| LET opt_mut IDENT opt_type EQUAL expr { VarDecl ($2, $3, $4, $6) }
-| RETURN expr { Return (Some $2) }
+| LET opt_mut IDENT opt_type EQUAL expr SEMICOLON { VarDecl ($2, $3, $4, $6) }
+| RETURN expr SEMICOLON { Return (Some $2) }
+| IF expr block ELSE block { If ($2, $3, $5) }
+| IF expr block { If ($2, $3, []) }
+| FOR IDENT IN expr block { For ($2, $4, $5) }
+| MATCH expr LBRACE match_cases RBRACE { Match ($2, $4) }
 | expr { Expr ($1) }
+
+match_cases:
+  | match_case match_cases { $1 :: $2 }
+  | match_case { [$1] }
+
+match_case:
+  | CASE pattern RARROW block { Case ($2, $4) }
+
+pattern:
+  | IDENT { VariablePattern $1 }
+  | NUMBER { LiteralPattern (F32 $1) }
+  (* Other patterns *)
 
 opt_tensor_type:
 | (* empty *) { None }
@@ -61,6 +77,8 @@ shape:
 expr:
 | NUMBER { Literal (F32 $1) }
 | IDENT { Variable $1 }
+| TRUE { Literal (Bool true) }
+| FALSE { Literal (Bool false) }
 | IDENT LPAREN expr_list RPAREN { Call ($1, $3) }
 | LPAREN expr RPAREN { $2 }
 | expr PLUS expr { BinOp (Add, $1, $3) }

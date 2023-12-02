@@ -3,7 +3,6 @@ open Irgen
 open Codegen
 open Jsgen
 open Cgen
-open Unix
 open Util
 
 type compilation_config = {
@@ -12,7 +11,39 @@ type compilation_config = {
   output_mlir: bool;
 }
 
+let parse_program input_file =
+  let channel = open_in input_file in
+  let lexbuf = Lexing.from_channel channel in
+  Parser.program Lexer.token lexbuf
+
+let compile_to_target ir target output_file =
+  let oc = open_out output_file in
+  let code = match target with
+    | "mlir" -> emit_mlir ir
+    | "js" -> emit_js ir
+    | "c" -> emit_c ir
+    | _ -> failwith "Invalid target"
+  in
+  output_string oc code;
+  close_out oc
+
 let compile input_file output_config =
+  let ast = time_phase "Parse" (fun () -> parse_program input_file) in
+  let () = time_phase "Sema" (fun () -> analyze_program ast) in
+  let ir = time_phase "IR Lowering" (fun () -> generate_ir ast) in
+
+  if output_config.output_mlir then
+    time_phase "MLIR Codegen" (fun () -> compile_to_target ir "mlir" (Filename.chop_suffix input_file ".rml" ^ ".mlir"));
+  if output_config.output_js then
+    time_phase "JS Codegen" (fun () -> compile_to_target ir "js" (Filename.chop_suffix input_file ".rml" ^ ".js"));
+  if output_config.output_c then
+    time_phase "C Codegen" (fun () -> compile_to_target ir "c" (Filename.chop_suffix input_file ".rml" ^ ".c"));
+
+
+  (* Displaying compilation analytics and metrics *)
+  report_timings ()
+
+(* let compile input_file output_config =
   let start_time = gettimeofday () in
   let timings = ref [] in
 
@@ -125,4 +156,4 @@ let compile input_file output_config =
   | e ->
       Printf.eprintf "An error occurred: %s\n" (Printexc.to_string e);
       close_in_noerr channel;
-      raise e
+      raise e *)

@@ -21,7 +21,18 @@ and analyze_stmt = function
   | Return None -> ()
   | Return (Some expr) -> analyze_expr expr
   | VarDecl (_, _, _, expr) -> analyze_expr expr
-  (* | VarDecl (_, _, expr) -> analyze_expr expr *)
+  | If (cond, then_stmt, else_stmt) ->
+      analyze_expr cond;
+      analyze_stmt_list then_stmt;
+      analyze_stmt_list else_stmt
+  | For (_name, expr, body) ->
+      analyze_expr expr;
+      analyze_stmt_list body
+  | Match (_expr, _cases) ->
+      failwith "Match not implemented"
+  (* | While (cond, body) ->
+      analyze_expr cond;
+      analyze_stmt_list body *)
 
 and analyze_expr = function
   | Variable _ -> ()  (* Here you might want to check if variable is declared *)

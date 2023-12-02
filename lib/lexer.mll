@@ -17,6 +17,7 @@ rule token = parse
   | ']'                   { RBRACKET }
   | '{'                   { LBRACE }
   | '}'                   { RBRACE }
+  | "->"                  { RARROW }
   | ';'                   { SEMICOLON }
   | ':'                   { COLON }
   | '='                   { EQUAL }
@@ -25,6 +26,15 @@ rule token = parse
   | "if"                  { IF }
   | "else"                { ELSE }
   | "fn"                  { FN }
+  | "while"               { WHILE }
+  | "for"                 { FOR }
+  | "in"                  { IN }
+  | "break"               { BREAK }
+  | "continue"            { CONTINUE }
+  | "match"               { MATCH }
+  | "case"                { CASE }
+  | "true"                { TRUE }
+  | "false"               { FALSE }
   | "mut"                 { MUT }
   | "u32"                 { U32 }
   | "f32"                 { F32 }
