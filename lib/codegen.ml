@@ -128,6 +128,15 @@ let emit_mlir_type = function
   | IRBoolTy -> "i1"
   | IRFloatTy -> "f64"
   | IRIntTy -> "i64"
+  | IRCharTy -> "i8"
+  | IRStringTy -> "string"
+  | _ -> failwith "not implemented"
+  (* TODO: *)
+  (* | IRTensorTy shape -> Printf.sprintf "tensor<%sxf64>" (String.concat "x" (List.map string_of_int shape))
+  | IRFuncTy (param_types, return_type) ->
+      let param_types_str = String.concat ", " (List.map emit_mlir_type param_types) in
+      let return_type_str = emit_mlir_type return_type in
+      Printf.sprintf "(%s) -> %s" param_types_str return_type_str *)
 
 let emit_mlir_function func =
   reset_counter ();

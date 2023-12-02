@@ -28,7 +28,7 @@ func_list:
 |  { [] }
 
 func:
-| FN IDENT LPAREN params RPAREN COLON return_type block {
+| FN IDENT LPAREN params RPAREN RARROW return_type block {
     { proto = { name = $2; params = $4; return_type = $7 }; body = $8 }
 }
 
@@ -38,10 +38,30 @@ return_type:
 | F32 { FloatTy }
 | BOOL { BoolTy }
 
+// params:
+// | IDENT { [$1] }
+// | IDENT COMMA params { $1 :: $3 }
+// |  { [] }
 params:
-| IDENT { [$1] }
-| IDENT COMMA params { $1 :: $3 }
+| param COMMA params { $1 :: $3 }
+| param { [$1] }
 |  { [] }
+
+param:
+| IDENT COLON ty { ($1, $3) }
+| IDENT { ($1, IntTy) }
+// | IDENT COLON ty { ($1, $2) }
+// | IDENT { ($1, IntTy) }
+
+ty:
+| U32 { IntTy }
+| F32 { FloatTy }
+| BOOL { BoolTy }
+// | tensor_type { TensorTy $1 }
+| tensor_type { TensorTy }
+| VOID { VoidTy }
+// TODO: support first-class functions
+// | FN LPAREN params RPAREN RARROW ty { FuncTy ($3, $6) }
 
 block:
 | LBRACE stmt_list RBRACE { $2 }
@@ -65,22 +85,21 @@ if_stmt:
 ;
 
 else_clause:
-  | ELSE block { $2 }
-  | ELSE if_stmt { [$2] }
-  | (* empty *) { [] }
-;
+| ELSE block { $2 }
+| ELSE if_stmt { [$2] }
+| (* empty *) { [] }
 
 match_cases:
-  | match_case match_cases { $1 :: $2 }
-  | match_case { [$1] }
+| match_case match_cases { $1 :: $2 }
+| match_case { [$1] }
 
 match_case:
-  | CASE pattern RARROW block { Case ($2, $4) }
+| CASE pattern RARROW block { Case ($2, $4) }
 
 pattern:
-  | IDENT { VariablePattern $1 }
-  | NUMBER { LiteralPattern (F32 $1) }
-  (* Other patterns *)
+| IDENT { VariablePattern $1 }
+| NUMBER { LiteralPattern (F32 $1) }
+(* Other patterns *)
 
 opt_tensor_type:
 | (* empty *) { None }

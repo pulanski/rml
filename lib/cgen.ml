@@ -5,6 +5,11 @@ let emit_c_type = function
   | IRIntTy -> "int"
   | IRFloatTy -> "float"
   | IRBoolTy -> "bool"
+  | IRCharTy -> "char"
+  | IRStringTy -> "char*"
+  | IRTensorTy -> "TODO: impl me"
+  | IRFuncTy -> "TODO: impl me"
+  | IRTypeVar -> "TODO: impl me"
 
 let rec emit_c_expr = function
   | IRU8 x -> string_of_int x
@@ -82,7 +87,7 @@ let rec emit_c_stmt = function
       Printf.sprintf "while (%s) {\n  %s\n}" cond_c body_c
   | IRLoop body ->
       let body_c = String.concat "\n  " (List.map emit_c_stmt body) in
-      Printf.sprintf "while (true) {\n  %s\n}" body_c
+      Printf.sprintf "while (1) {\n  %s\n}" body_c
   (* | IRBreak -> "break;" *)
   (* Extend with more statement types as needed *)
 

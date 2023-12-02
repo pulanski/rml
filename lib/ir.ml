@@ -5,6 +5,15 @@ type ir_type =
   | IRIntTy
   | IRFloatTy
   | IRBoolTy
+  | IRCharTy
+  | IRStringTy
+  | IRTensorTy
+  | IRFuncTy
+  | IRTypeVar
+  (* TODO: propagate data to here, maybe *)
+  (* | IRTensorTy of ir_shape * ir_type
+  | IRFuncTy of ir_type list * ir_type
+  | IRTypeVar of string *)
   (* | ...  // Other types as needed *)
 
 type ir_program = ir_func list
