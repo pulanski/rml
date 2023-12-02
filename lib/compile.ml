@@ -1,7 +1,7 @@
 open Sema
 open Irgen
-open Mlirgen
-open Jsgen
+(* open Mlirgen
+open Jsgen *)
 open Cgen
 open Util
 
@@ -19,9 +19,9 @@ let parse_program input_file =
 let compile_to_target ir target output_file =
   let oc = open_out output_file in
   let code = match target with
-    | "mlir" -> emit_mlir ir
-    | "js" -> emit_js ir
-    | "c" -> emit_c ir
+  | "c" -> emit_c ir
+    (* | "mlir" -> emit_mlir ir
+    | "js" -> emit_js ir *)
     | _ -> failwith "Invalid target"
   in
   output_string oc code;

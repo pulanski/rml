@@ -1,22 +1,20 @@
-type ir_shape = int list
+type ir_program = ir_item list
 
-type ir_type =
-  | IRVoidTy
-  | IRIntTy
-  | IRFloatTy
-  | IRBoolTy
-  | IRCharTy
-  | IRStringTy
-  | IRTensorTy
-  | IRFuncTy
-  | IRTypeVar
-  (* TODO: propagate data to here, maybe *)
-  (* | IRTensorTy of ir_shape * ir_type
-  | IRFuncTy of ir_type list * ir_type
-  | IRTypeVar of string *)
-  (* | ...  // Other types as needed *)
+and ir_item =
+  | IRFunc of ir_func
+  | IRStructDef of ir_struct_def
+  | IREnumDef of ir_enum_def
+  (* Add other item types as necessary *)
 
-type ir_program = ir_func list
+and ir_struct_def = {
+  ir_struct_name: string;
+  ir_fields: (string * ir_type) list;
+}
+
+and ir_enum_def = {
+  ir_enum_name: string;
+  ir_variants: (string * ir_type option) list;
+}
 
 and ir_param = {
   name: string;
@@ -88,3 +86,22 @@ and ir_binop =
   | IRNeq
   | IRLeq
   | IRGeq
+
+
+and ir_shape = int list
+
+and ir_type =
+  | IRVoidTy
+  | IRIntTy
+  | IRFloatTy
+  | IRBoolTy
+  | IRCharTy
+  | IRStringTy
+  | IRTensorTy
+  | IRFuncTy
+  | IRTypeVar
+  (* TODO: propagate data to here, maybe *)
+  (* | IRTensorTy of ir_shape * ir_type
+  | IRFuncTy of ir_type list * ir_type
+  | IRTypeVar of string *)
+  (* | ...  // Other types as needed *)

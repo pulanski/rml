@@ -11,8 +11,31 @@ let rec calculate_shape (elements: expr list) : ir_shape =
 let rec generate_ir (program: program) : ir_program =
   ir_of_program program
 and ir_of_program (program: program) : ir_program =
-  List.map ir_of_func program
+  List.map ir_of_item program
 
+and ir_of_item (item: item) : ir_item =
+  match item with
+  | FunctionItem func -> IRFunc (ir_of_func func)
+  | StructItem struct_def -> ir_of_struct struct_def
+  | EnumItem enum_def -> ir_of_enum enum_def
+
+and ir_of_struct (struct_def: struct_def) : ir_item =
+  IRStructDef {
+    ir_struct_name = struct_def.struct_name;
+    ir_fields = List.map (fun (name, ty) -> (name, ir_of_type ty)) struct_def.fields
+  }
+
+and ir_of_enum (enum_def: enum_def) : ir_item =
+  IREnumDef {
+    ir_enum_name = enum_def.enum_name;
+    ir_variants = List.map (fun (name, ty_opt) -> (name, Option.map ir_of_type ty_opt)) enum_def.variants
+  }
+
+and ir_of_func (func: func) : ir_func =
+  { func_name = func.proto.name;
+    params = List.map ir_of_param func.proto.params;
+    body = List.map ir_of_stmt func.body;
+    return_type = ir_of_type func.proto.return_type }
 
 and ir_of_type (ty: ty) : ir_type =
   match ty with
@@ -29,10 +52,6 @@ and ir_of_type (ty: ty) : ir_type =
   { name = name; param_type = ir_of_type ty } *)
 and ir_of_param ((name, ty): (string * ty)) : ir_param =
   { name = name; param_type = ir_of_type ty }
-
-
-and ir_of_func (func: func) : ir_func =
-  { func_name = func.proto.name;  params = List.map ir_of_param func.proto.params; body = List.map ir_of_stmt func.body; return_type = ir_of_type func.proto.return_type }
 
 and ir_of_stmt (statement: stmt) : ir_stmt =
   match statement with

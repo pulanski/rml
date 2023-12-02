@@ -107,12 +107,30 @@ and emit_c_pattern = function
       let patterns_c = String.concat ", " (List.map emit_c_pattern patterns) in
       Printf.sprintf "%s(%s)" name patterns_c
 
-let emit_c_function func =
+and emit_c_function func =
   let params_str = String.concat ", " (List.map (fun p -> (emit_c_type p.param_type) ^ " " ^ p.name) func.params) in
   let return_type_str = emit_c_type func.return_type in
   let body_str = String.concat "\n  " (List.map emit_c_stmt func.body) in
   Printf.sprintf "%s %s(%s) {\n  %s\n}" return_type_str func.func_name params_str body_str
 
-let emit_c ir_program =
+(* let emit_c ir_program =
   let functions_str = String.concat "\n" (List.map emit_c_function ir_program) in
-  "// Generated C Program\n\n" ^ functions_str
+  "// Generated C Program\n\n" ^ functions_str *)
+
+and emit_c_item = function
+  | IRFunc func -> emit_c_function func
+  | IRStructDef struct_def -> emit_c_struct struct_def
+  | IREnumDef enum_def -> emit_c_enum enum_def
+  (* Add other item types as necessary *)
+
+and emit_c_struct struct_def =
+  let fields_str = String.concat ";\n  " (List.map (fun (name, ty) -> (emit_c_type ty) ^ " " ^ name) struct_def.ir_fields) in
+  Printf.sprintf "struct %s {\n  %s;\n};" struct_def.ir_struct_name fields_str
+
+and emit_c_enum enum_def =
+  let variants_str = String.concat ",\n  " (List.map fst enum_def.ir_variants) in
+  Printf.sprintf "enum %s {\n  %s\n};" enum_def.ir_enum_name variants_str
+
+and emit_c ir_program =
+  let items_str = String.concat "\n" (List.map emit_c_item ir_program) in
+  "// Generated C Program\n\n" ^ items_str

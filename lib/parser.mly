@@ -21,11 +21,23 @@
 %%
 
 program:
-| func_list EOF { $1 }
+  | item_list EOF { $1 }
 
-func_list:
-| func func_list { $1 :: $2 }
-|  { [] }
+item_list:
+  | item item_list { $1 :: $2 }
+  |  { [] }
+
+item:
+  | func { FunctionItem $1 }
+  | struct_def { StructItem $1 }
+  | enum_def { EnumItem $1 }
+
+// program:
+// | func_list EOF { $1 }
+
+// func_list:
+// | func func_list { $1 :: $2 }
+// |  { [] }
 
 func:
 | FN IDENT LPAREN params RPAREN RARROW return_type block {

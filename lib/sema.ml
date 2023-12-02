@@ -108,19 +108,45 @@ and type_of_literal = function
   | Function _ -> FuncTy *)
   (* ... *)
 
-let rec analyze_program env = function
+(* let rec analyze_program env = function
   | [] -> ()
   | func :: rest ->
       analyze_func env func;
-      analyze_program env rest
+      analyze_program env rest *)
 
-and analyze_struct_def env struct_def =
+let rec analyze_program env = function
+  | [] -> ()
+  | item :: rest -> (
+      match item with
+      | FunctionItem func ->
+          analyze_func env func
+      | StructItem struct_def ->
+          let env = analyze_struct_def env struct_def
+          in analyze_program env rest
+      | EnumItem enum_def ->
+          let env = analyze_enum_def env enum_def
+          in analyze_program env rest
+      )
+
+
+(* and analyze_struct_def env struct_def =
   (* Add struct definition to environment *)
-  { env with structs = StringMap.add struct_def.struct_name struct_def env.structs }
+  { env with structs = StringMap.add struct_def.struct_name struct_def env.structs } *)
+and analyze_struct_def env struct_def =
+  if StringMap.mem struct_def.struct_name env.structs then
+    failwith ("Duplicate struct definition: " ^ struct_def.struct_name);
+  (* Optionally, check field types here *)
+  let env = { env with structs = StringMap.add struct_def.struct_name struct_def env.structs } in
+  env
+
 
 and analyze_enum_def env enum_def =
-  (* Add enum definition to environment *)
-  { env with enums = StringMap.add enum_def.enum_name enum_def env.enums }
+  if StringMap.mem enum_def.enum_name env.enums then
+    failwith ("Duplicate enum definition: " ^ enum_def.enum_name);
+  (* Optionally, check variant types here *)
+  let env = { env with enums = StringMap.add enum_def.enum_name enum_def env.enums } in
+  env
+
 
 and analyze_struct_init env struct_name _field_inits =
   let _struct_def =
