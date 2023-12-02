@@ -1,13 +1,19 @@
-# User defined generic function that operates on unknown shaped arguments.
-fn multiply_transpose(a, b) {
-  return transpose(a) * transpose(b);
-}
-
 fn main() {
   let a = 2;
-  let mut b = 3;
-  # var b = [1, 2, 3, 4, 5, 6];
-  # var c = multiply_transpose(a, b);
-  # var d = multiply_transpose(b, a);
-  # print(d);
+  let b = 3;
+  let c = a + b;
+
+  # let d = foo();
+
+  let e = c + d;
+}
+
+fn foo() {
+  let a = 2;
+  let b = 20;
+  let c = 3;
+  let d = 17;
+  let e = c + d;
+  let f = a - b;
+  let g = f * e;
 }

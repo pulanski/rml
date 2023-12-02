@@ -24,14 +24,12 @@ and ir_of_func (func: func) : ir_func =
     body = List.map ir_of_stmt func.body
   }
 
-
 and ir_of_stmt (statement: stmt) : ir_stmt =
   match statement with
   | Expr expr -> IRExpr (ir_of_expr expr)
   | Return (Some expr) -> IRReturn (ir_of_expr expr)
   | Return None -> IRReturn (IRU8 0)
   | VarDecl (_, name, _, expr) -> IRVarDecl (name, ir_of_expr expr)
-  (* | VarDecl (name, _, expr) -> IRVarDecl (name, ir_of_expr expr) *)
 
 and ir_of_expr (expression: expr) : ir_expr =
   match expression with
@@ -56,8 +54,6 @@ and ir_of_expr (expression: expr) : ir_expr =
     | _ -> failwith "Not implemented"
     (* | Array x -> IRArray x
     | Custom x -> IRCustom x *)
-
-
 
 and ir_of_binop (binop: binop) : ir_binop =
   match binop with

@@ -13,12 +13,6 @@ and ir_func = {
   body: ir_stmt list;
 }
 
-(* and ir_func = {
-  name: string;
-  params: ir_expr list;
-  body: ir_stmt list;
-} *)
-
 and ir_stmt =
   | IRExpr of ir_expr
   | IRReturn of ir_expr

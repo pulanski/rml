@@ -3,7 +3,8 @@ module {
 func.func @main() {
   %0 = arith.constant 2.000000 : f32
   %1 = arith.constant 3.000000 : f32
-  %2 = rml.add a, b : f64
+  %2 = %3 = rml.add a, b : f64
+  %4 = %5 = rml.add c, d : f64
 }
 
 func.func @foo() {
@@ -11,8 +12,8 @@ func.func @foo() {
   %1 = arith.constant 20.000000 : f32
   %2 = arith.constant 3.000000 : f32
   %3 = arith.constant 17.000000 : f32
-  %4 = rml.add c, d : f64
-  %5 = rml.sub a, b : f64
-  %6 = rml.mul f, e : f64
+  %4 = %5 = rml.add c, d : f64
+  %6 = %7 = rml.sub a, b : f64
+  %8 = %9 = rml.mul f, e : f64
 }
 }
