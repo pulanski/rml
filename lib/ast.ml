@@ -1,4 +1,11 @@
-type program = func list
+(* type program = func list *)
+
+type program = item list
+
+and item =
+  | FunctionItem of func
+  | StructItem of struct_def
+  | EnumItem of enum_def
 
 and func = {
   proto: prototype;
