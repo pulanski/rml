@@ -38,10 +38,6 @@ return_type:
 | F32 { FloatTy }
 | BOOL { BoolTy }
 
-// params:
-// | IDENT { [$1] }
-// | IDENT COMMA params { $1 :: $3 }
-// |  { [] }
 params:
 | param COMMA params { $1 :: $3 }
 | param { [$1] }
@@ -50,8 +46,6 @@ params:
 param:
 | IDENT COLON ty { ($1, $3) }
 | IDENT { ($1, IntTy) }
-// | IDENT COLON ty { ($1, $2) }
-// | IDENT { ($1, IntTy) }
 
 ty:
 | U32 { IntTy }
@@ -125,7 +119,6 @@ expr:
 | expr DIV expr { BinOp (Div, $1, $3) }
 | expr LANGLE expr { BinOp (Lt, $1, $3) }
 | expr RANGLE expr { BinOp (Gt, $1, $3) }
-// | MINUS expr %prec UMINUS { UnOp (Neg, $2) }
 | LBRACKET tensor_list RBRACKET { Tensor ($2) }
 
 opt_mut:
