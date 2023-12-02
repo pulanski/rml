@@ -126,6 +126,7 @@ let rec analyze_program env = function
       | EnumItem enum_def ->
           let env = analyze_enum_def env enum_def
           in analyze_program env rest
+      | _ -> failwith "Not implemented"
       )
 
 and analyze_struct_def env struct_def =

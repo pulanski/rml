@@ -4,6 +4,33 @@ and item =
   | FunctionItem of func
   | StructItem of struct_def
   | EnumItem of enum_def
+  | TraitItem of trait_def
+
+and trait_def = {
+  trait_name: string;
+  items: trait_item list;
+}
+
+and trait_item =
+  | TraitFunc of trait_func
+  | TraitType of trait_type
+  | TraitConst of trait_const
+
+and trait_func = {
+  func_proto: prototype;
+  default_impl: stmt list option;
+}
+
+and trait_type = {
+  type_name: string;
+  type_def: ty option;
+}
+
+and trait_const = {
+  const_name: string;
+  const_type: ty;
+  const_value: expr option;
+}
 
 and func = {
   proto: prototype;

@@ -18,6 +18,7 @@ and ir_of_item (item: item) : ir_item =
   | FunctionItem func -> IRFunc (ir_of_func func)
   | StructItem struct_def -> ir_of_struct struct_def
   | EnumItem enum_def -> ir_of_enum enum_def
+  | TraitItem _trait_def -> failwith "Not implemented"
 
 and ir_of_struct (struct_def: struct_def) : ir_item =
   IRStructDef {
