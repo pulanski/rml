@@ -13,10 +13,11 @@ fn main() -> u32 {
     return e;
 } // TODO: improve scope analysis
 
-trait Trait {
-    // fn foo(&self) -> u32; // TODO: add support for references
-    fn foo() -> u32;
-}
+// TODO: add support for sema and codegen on traits
+// trait Trait {
+// fn foo(&self) -> u32; // TODO: add support for references
+// fn foo() -> u32;
+// }
 
 // fn main() -> void {
 //     if true {

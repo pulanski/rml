@@ -108,12 +108,6 @@ and type_of_literal = function
   | Function _ -> FuncTy *)
   (* ... *)
 
-(* let rec analyze_program env = function
-  | [] -> ()
-  | func :: rest ->
-      analyze_func env func;
-      analyze_program env rest *)
-
 let rec analyze_program env = function
   | [] -> ()
   | item :: rest -> (
@@ -186,7 +180,7 @@ and update_env env name ty =
   { env with vars = StringMap.add name ty env.vars }
 
 and analyze_func env func =
-  let { proto = { name = _; params; _ }; body } = func in
+  let { proto = { name = _; params; _ }; body; func_attributes = _ } = func in
   let func_env = List.fold_left (fun acc_env (name, ty) ->
     update_env acc_env name ty) env params in
   ignore (analyze_stmt_list func_env body); ()  (* Ignore the returned environment *)
