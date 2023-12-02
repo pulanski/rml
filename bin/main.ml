@@ -1,7 +1,7 @@
 open Rml.Compile
 
 let () =
-  let input_file = "test/in/sum.rml" in
+  let input_file = "test/in/sum.rs" in
   let output_config = {
     output_js = false;
     output_c = true;

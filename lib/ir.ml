@@ -28,6 +28,8 @@ and ir_stmt =
   | IRIf of ir_expr * ir_stmt list * ir_stmt list  (* if condition then block else block *)
   | IRFor of string * ir_expr * ir_stmt list       (* for variable in iterable do block *)
   | IRMatch of ir_expr * ir_match_case list        (* match expression with cases *)
+  | IRWhile of ir_expr * ir_stmt list              (* while condition do block *)
+  | IRLoop of ir_stmt list                         (* loop block *)
 
 and ir_match_case =
   | IRCase of ir_pattern * ir_stmt list            (* case pattern -> block *)
@@ -62,3 +64,18 @@ and ir_binop =
   | IRSub
   | IRMul
   | IRDiv
+  | IRMod
+  | IRPow
+  | IRAnd
+  | IROr
+  | IRXor
+  | IRShl
+  | IRShr
+  | IRLt
+  | IRLte
+  | IRGt
+  | IRGte
+  | IREq
+  | IRNeq
+  | IRLeq
+  | IRGeq

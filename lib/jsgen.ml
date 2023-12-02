@@ -43,7 +43,7 @@ and emit_js_binop = function
   | IRSub -> "-"
   | IRMul -> "*"
   | IRDiv -> "/"
-  (* | IRMod -> "%"
+  | IRMod -> "%"
   | IRAnd -> "&&"
   | IROr -> "||"
   | IREq -> "=="
@@ -52,8 +52,15 @@ and emit_js_binop = function
   | IRLte -> "<="
   | IRGt -> ">"
   | IRGte -> ">="
-  | IRConcat -> "+"
-  | IRIndex -> "[]" *)
+  | IRPow -> "**"
+  | IRXor -> "^"
+  | IRShl -> "<<"
+  | IRShr -> ">>"
+  | IRLeq -> "<="
+  | IRGeq -> ">="
+  (*| IRConcat -> "+"
+  | IRIndex -> "[]"
+   *)
 
 
 

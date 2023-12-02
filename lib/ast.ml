@@ -23,6 +23,8 @@ and stmt =
   | If of expr * stmt list * stmt list
   | For of string * expr * stmt list
   | Match of expr * match_case list
+  | While of expr * stmt list
+  | Loop of stmt list
 
 and ty =
   | VoidTy
@@ -51,6 +53,16 @@ and binop =
   | Sub
   | Mul
   | Div
+  | Mod
+  | Pow
+  | Eq
+  | Neq
+  | Lt
+  | Gt
+  | Leq
+  | Geq
+  | And
+  | Or
 
 and data_type =
   | I8 of int

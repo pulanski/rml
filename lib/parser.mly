@@ -6,7 +6,7 @@
 %token PLUS MINUS MULT DIV LANGLE RANGLE
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE SEMICOLON EQUAL COMMA COLON RARROW
 %token U32 F32
-%token RETURN FN VAR LET IF ELSE MUT FOR WHILE BREAK CONTINUE IN MATCH CASE TRUE FALSE VOID BOOL
+%token RETURN FN VAR LET IF ELSE MUT FOR WHILE BREAK CONTINUE IN MATCH CASE TRUE FALSE VOID BOOL LOOP
 %token <string> IDENT
 %token EOF
 
@@ -27,8 +27,6 @@ func_list:
 | func func_list { $1 :: $2 }
 |  { [] }
 
-// func:
-// | FN IDENT LPAREN params RPAREN block { { proto = { name = $2; params = $4 }; body = $6 } }
 func:
 | FN IDENT LPAREN params RPAREN COLON return_type block {
     { proto = { name = $2; params = $4; return_type = $7 }; body = $8 }
@@ -55,11 +53,22 @@ stmt_list:
 stmt:
 | LET opt_mut IDENT opt_type EQUAL expr SEMICOLON { VarDecl ($2, $3, $4, $6) }
 | RETURN expr SEMICOLON { Return (Some $2) }
-| IF expr block ELSE block { If ($2, $3, $5) }
-| IF expr block { If ($2, $3, []) }
+| if_stmt { $1 }
+| WHILE expr block { While ($2, $3) }
+| LOOP block { Loop ($2) }
 | FOR IDENT IN expr block { For ($2, $4, $5) }
 | MATCH expr LBRACE match_cases RBRACE { Match ($2, $4) }
 | expr { Expr ($1) }
+
+if_stmt:
+  | IF expr block else_clause { If ($2, $3, $4) }
+;
+
+else_clause:
+  | ELSE block { $2 }
+  | ELSE if_stmt { [$2] }
+  | (* empty *) { [] }
+;
 
 match_cases:
   | match_case match_cases { $1 :: $2 }
@@ -95,6 +104,9 @@ expr:
 | expr MINUS expr { BinOp (Sub, $1, $3) }
 | expr MULT expr { BinOp (Mul, $1, $3) }
 | expr DIV expr { BinOp (Div, $1, $3) }
+| expr LANGLE expr { BinOp (Lt, $1, $3) }
+| expr RANGLE expr { BinOp (Gt, $1, $3) }
+// | MINUS expr %prec UMINUS { UnOp (Neg, $2) }
 | LBRACKET tensor_list RBRACKET { Tensor ($2) }
 
 opt_mut:

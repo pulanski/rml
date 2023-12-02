@@ -47,6 +47,23 @@ and emit_op = function
   | IRSub -> "rml.sub"
   | IRMul -> "rml.mul"
   | IRDiv -> "rml.div"
+  | IRMod -> "rml.mod"
+  | IREq -> "rml.eq"
+  | IRNeq -> "rml.neq"
+  | IRLt -> "rml.lt"
+  | IRLte -> "rml.lte"
+  | IRGt -> "rml.gt"
+  | IRGte -> "rml.gte"
+  | IRAnd -> "rml.and"
+  | IROr -> "rml.or"
+  | IRPow -> "rml.pow"
+  | IRXor -> "rml.xor"
+  | IRShl -> "rml.shl"
+  | IRShr -> "rml.shr"
+  | IRLeq -> "rml.leq"
+  | IRGeq -> "rml.geq"
+  (* | IRNot -> "rml.not"
+  | IRNeg -> "rml.neg" *)
 
 let rec emit_mlir_stmt = function
   | IRExpr expr -> emit_mlir_expr expr
@@ -59,10 +76,13 @@ let rec emit_mlir_stmt = function
       let then_str = String.concat "\n  " (List.map emit_mlir_stmt then_stmts) in
       let else_str = String.concat "\n  " (List.map emit_mlir_stmt else_stmts) in
       Printf.sprintf "if %s {\n  %s\n} else {\n  %s\n}" cond_ssa then_str else_str
-  (* | IrWhile (cond, body) ->
+  | IRWhile (cond, body) ->
       let cond_ssa = emit_mlir_expr cond in
       let body_str = String.concat "\n  " (List.map emit_mlir_stmt body) in
-      Printf.sprintf "while %s {\n  %s\n}" cond_ssa body_str *)
+      Printf.sprintf "while %s {\n  %s\n}" cond_ssa body_str
+  | IRLoop body ->
+      let body_str = String.concat "\n  " (List.map emit_mlir_stmt body) in
+      Printf.sprintf "loop {\n  %s\n}" body_str
   | IRFor (name, expr, body) ->
       let expr_ssa = emit_mlir_expr expr in
       let body_str = String.concat "\n  " (List.map emit_mlir_stmt body) in

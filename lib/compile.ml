@@ -33,11 +33,11 @@ let compile input_file output_config =
   let ir = time_phase "IR Lowering" (fun () -> generate_ir ast) in
 
   if output_config.output_mlir then
-    time_phase "MLIR Codegen" (fun () -> compile_to_target ir "mlir" (Filename.chop_suffix input_file ".rml" ^ ".mlir"));
+    time_phase "MLIR Codegen" (fun () -> compile_to_target ir "mlir" (Filename.chop_suffix input_file ".rs" ^ ".mlir"));
   if output_config.output_js then
-    time_phase "JS Codegen" (fun () -> compile_to_target ir "js" (Filename.chop_suffix input_file ".rml" ^ ".js"));
+    time_phase "JS Codegen" (fun () -> compile_to_target ir "js" (Filename.chop_suffix input_file ".rs" ^ ".js"));
   if output_config.output_c then
-    time_phase "C Codegen" (fun () -> compile_to_target ir "c" (Filename.chop_suffix input_file ".rml" ^ ".c"));
+    time_phase "C Codegen" (fun () -> compile_to_target ir "c" (Filename.chop_suffix input_file ".rs" ^ ".c"));
 
 
   (* Displaying compilation analytics and metrics *)
@@ -74,7 +74,7 @@ let compile input_file output_config =
       let mlir_code = time_phase "MLIR Code Emission" (fun () -> emit_mlir ir) in
 
       Printf.printf "CodeGen ...\n";
-      let output_file = Filename.chop_suffix input_file ".rml" ^ ".mlir" in
+      let output_file = Filename.chop_suffix input_file ".rs" ^ ".mlir" in
       let oc = open_out output_file in
       output_string oc mlir_code;
       close_out oc;
@@ -102,7 +102,7 @@ let compile input_file output_config =
       let js_code = time_phase "JS Code Emission" (fun () -> emit_js ir) in
 
       Printf.printf "CodeGen ...\n";
-      let output_file = Filename.chop_suffix input_file ".rml" ^ ".js" in
+      let output_file = Filename.chop_suffix input_file ".rs" ^ ".js" in
       let oc = open_out output_file in
       output_string oc js_code;
       close_out oc;
@@ -130,7 +130,7 @@ let compile input_file output_config =
       let c_code = time_phase "C Code Emission" (fun () -> emit_c ir) in
 
       Printf.printf "CodeGen ...\n";
-      let output_file = Filename.chop_suffix input_file ".rml" ^ ".c" in
+      let output_file = Filename.chop_suffix input_file ".rs" ^ ".c" in
       let oc = open_out output_file in
       output_string oc c_code;
       close_out oc;

@@ -30,9 +30,12 @@ and analyze_stmt = function
       analyze_stmt_list body
   | Match (_expr, _cases) ->
       failwith "Match not implemented"
-  (* | While (cond, body) ->
+  | While (cond, body) ->
       analyze_expr cond;
-      analyze_stmt_list body *)
+      analyze_stmt_list body
+  (* | Break -> () *)
+  | Loop body ->
+      analyze_stmt_list body
 
 and analyze_expr = function
   | Variable _ -> ()  (* Here you might want to check if variable is declared *)

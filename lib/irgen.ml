@@ -38,6 +38,9 @@ and ir_of_stmt (statement: stmt) : ir_stmt =
   | If (cond, then_stmts, else_stmts) -> IRIf (ir_of_expr cond, List.map ir_of_stmt then_stmts, List.map ir_of_stmt else_stmts)
   (* | While (cond, stmts) -> IRWhile (ir_of_expr cond, List.map ir_of_stmt stmts) *)
   | For (name, expr, body) -> IRFor (name, ir_of_expr expr, List.map ir_of_stmt body)
+  | While (cond, body) -> IRWhile (ir_of_expr cond, List.map ir_of_stmt body)
+  | Loop (body) -> IRLoop (List.map ir_of_stmt body)
+  (* | Match (expr, cases) -> IRMatch (ir_of_expr expr, List.map ir_of_case cases) *)
   | _ -> failwith "Not implemented"
 
 and ir_of_expr (expression: expr) : ir_expr =
@@ -70,6 +73,16 @@ and ir_of_binop (binop: binop) : ir_binop =
   | Sub -> IRSub
   | Mul -> IRMul
   | Div -> IRDiv
+  | Mod -> IRMod
+  | Pow -> IRPow
+  | Eq -> IREq
+  | Neq -> IRNeq
+  | Lt -> IRLt
+  | Gt -> IRGt
+  | Leq -> IRLeq
+  | Geq -> IRGeq
+  | And -> IRAnd
+  | Or -> IROr
 
 (*
     and ir_of_func (func: func) : ir_func =

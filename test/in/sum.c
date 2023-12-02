@@ -4,6 +4,29 @@ void main() {
   if (1) {
   int f = 2.;
 }
+  while (1) {
+  int f = 2.;
+}
+  while (true) {
+  int life = 42.;
+  if ((life < 0.)) {
+  int life = 42.;
+}
+}
+  if (1) {
+  int f = 2.;
+} else {
+  int f = 3.;
+}
+  if (1) {
+  int f = 2.;
+} else {
+  if (0) {
+  int f = 3.;
+} else {
+  int f = 4.;
+}
+}
 }
 void foo() {
   int a = 2.;
