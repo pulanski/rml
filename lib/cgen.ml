@@ -1,5 +1,11 @@
 open Ir
 
+let emit_c_type = function
+  | IRVoidTy -> "void"
+  | IRIntTy -> "int"
+  | IRFloatTy -> "float"
+  | IRBoolTy -> "bool"
+
 let rec emit_c_expr = function
   | IRU8 x -> string_of_int x
   | IRU16 x -> string_of_int x
@@ -76,10 +82,10 @@ and emit_c_pattern = function
       Printf.sprintf "%s(%s)" name patterns_c
 
 let emit_c_function func =
-  let params_str = String.concat ", " (List.map (fun p -> "int " ^ p.name) func.params) in
+  let params_str = String.concat ", " (List.map (fun p -> (emit_c_type p.param_type) ^ " " ^ p.name) func.params) in
+  let return_type_str = emit_c_type func.return_type in
   let body_str = String.concat "\n  " (List.map emit_c_stmt func.body) in
-  Printf.sprintf "int %s(%s) {\n  %s\n}" func.func_name params_str body_str
-
+  Printf.sprintf "%s %s(%s) {\n  %s\n}" return_type_str func.func_name params_str body_str
 
 let emit_c ir_program =
   let functions_str = String.concat "\n" (List.map emit_c_function ir_program) in

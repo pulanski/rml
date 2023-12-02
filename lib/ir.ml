@@ -1,15 +1,23 @@
 type ir_shape = int list
 
+type ir_type =
+  | IRVoidTy
+  | IRIntTy
+  | IRFloatTy
+  | IRBoolTy
+  (* | ...  // Other types as needed *)
+
 type ir_program = ir_func list
 
 and ir_param = {
   name: string;
-  param_type: string;
+  param_type: ir_type;
 }
 
 and ir_func = {
   func_name: string;
   params: ir_param list;
+  return_type: ir_type;
   body: ir_stmt list;
 }
 

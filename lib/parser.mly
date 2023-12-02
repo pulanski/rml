@@ -6,7 +6,7 @@
 %token PLUS MINUS MULT DIV LANGLE RANGLE
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE SEMICOLON EQUAL COMMA COLON RARROW
 %token U32 F32
-%token RETURN FN VAR LET IF ELSE MUT FOR WHILE BREAK CONTINUE IN MATCH CASE TRUE FALSE
+%token RETURN FN VAR LET IF ELSE MUT FOR WHILE BREAK CONTINUE IN MATCH CASE TRUE FALSE VOID BOOL
 %token <string> IDENT
 %token EOF
 
@@ -27,8 +27,18 @@ func_list:
 | func func_list { $1 :: $2 }
 |  { [] }
 
+// func:
+// | FN IDENT LPAREN params RPAREN block { { proto = { name = $2; params = $4 }; body = $6 } }
 func:
-| FN IDENT LPAREN params RPAREN block { { proto = { name = $2; params = $4 }; body = $6 } }
+| FN IDENT LPAREN params RPAREN COLON return_type block {
+    { proto = { name = $2; params = $4; return_type = $7 }; body = $8 }
+}
+
+return_type:
+| VOID { VoidTy }
+| U32 { IntTy }
+| F32 { FloatTy }
+| BOOL { BoolTy }
 
 params:
 | IDENT { [$1] }

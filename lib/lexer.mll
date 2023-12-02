@@ -33,6 +33,8 @@ rule token = parse
   | "continue"            { CONTINUE }
   | "match"               { MATCH }
   | "case"                { CASE }
+  | "void"                { VOID }
+  | "bool"                { BOOL }
   | "true"                { TRUE }
   | "false"               { FALSE }
   | "mut"                 { MUT }

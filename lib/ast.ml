@@ -13,6 +13,7 @@ and prototype = {
   name: string;
   params: string list;
   (* params: (string * data_type) list; *)
+  return_type: ty;
 }
 
 and stmt =
@@ -22,6 +23,12 @@ and stmt =
   | If of expr * stmt list * stmt list
   | For of string * expr * stmt list
   | Match of expr * match_case list
+
+and ty =
+  | VoidTy
+  | IntTy
+  | FloatTy
+  | BoolTy
 
 and match_case =
   | Case of pattern * stmt list        (* case pattern -> block *)

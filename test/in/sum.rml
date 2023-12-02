@@ -1,10 +1,10 @@
-fn main() {
+fn main(): void {
   if true {
     let f = 2;
   }
 }
 
-fn foo() {
+fn foo(): void {
   let a = 2;
   let b = 20;
   let c = 3;

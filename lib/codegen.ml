@@ -103,11 +103,17 @@ and emit_mlir_pattern = function
     Printf.sprintf "rml.constant dense<[%s]> : tensor<%sxf64>" elements_str shape_str
   | _ -> failwith "not implemented" *)
 
+let emit_mlir_type = function
+  | IRVoidTy -> "void"
+  | IRBoolTy -> "i1"
+  | IRFloatTy -> "f64"
+  | IRIntTy -> "i64"
+
 let emit_mlir_function func =
   reset_counter ();
   let stmts_str = String.concat "\n  " (List.map emit_mlir_stmt func.body) in
   (* Extract names from function parameters *)
-  let param_names = List.map (fun p -> Printf.sprintf "%s: %s" p.name p.param_type) func.params in
+  let param_names = List.map (fun p -> Printf.sprintf "%s: %s" p.name (emit_mlir_type p.param_type)) func.params in
   let params_str = String.concat ", " param_names in
   Printf.sprintf "func.func @%s(%s) {\n  %s\n}\n" func.func_name params_str stmts_str
 

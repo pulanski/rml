@@ -13,16 +13,21 @@ let rec generate_ir (program: program) : ir_program =
 and ir_of_program (program: program) : ir_program =
   List.map ir_of_func program
 
+and convert_param (param: string) : ir_param =
+  { name = param; param_type = IRIntTy }  (* Assuming default type as IRIntTy *)
+
+and ir_of_type (ty: ty) : ir_type =
+  match ty with
+  | IntTy -> IRIntTy
+  | FloatTy -> IRFloatTy
+  | VoidTy -> IRVoidTy
+  (* | CharTy -> IRCharTy *)
+  (* | StringTy -> IRStringTy *)
+  | BoolTy -> IRBoolTy
+  (* | TensorTy -> IRTensorTy *)
+
 and ir_of_func (func: func) : ir_func =
-  let param_types = List.map (fun _ -> "tensor<*xf64>") func.proto.params in
-  let params_with_types = List.mapi
-    (fun i param -> { name = Printf.sprintf "arg%d" i; param_type = param })
-    param_types in
-  {
-    func_name = func.proto.name;
-    params = params_with_types;
-    body = List.map ir_of_stmt func.body
-  }
+  { func_name = func.proto.name;  params = List.map convert_param func.proto.params; body = List.map ir_of_stmt func.body; return_type = ir_of_type func.proto.return_type }
 
 and ir_of_stmt (statement: stmt) : ir_stmt =
   match statement with
@@ -65,3 +70,15 @@ and ir_of_binop (binop: binop) : ir_binop =
   | Sub -> IRSub
   | Mul -> IRMul
   | Div -> IRDiv
+
+(*
+    and ir_of_func (func: func) : ir_func =
+  let param_types = List.map (fun _ -> "tensor<*xf64>") func.proto.params in
+  let params_with_types = List.mapi
+    (fun i param -> { name = Printf.sprintf "arg%d" i; param_type = param })
+    param_types in
+  {
+    func_name = func.proto.name;
+    params = params_with_types;
+    body = List.map ir_of_stmt func.body
+  } *)
