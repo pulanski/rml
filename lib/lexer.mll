@@ -30,6 +30,14 @@ rule token = parse
   | "fn"                  { FN }
   | "struct"              { STRUCT }
   | "enum"                { ENUM }
+  | "impl"                { IMPL }
+  | "type"                { TYPE }
+  | "use"                 { USE }
+  | "as"                  { AS }
+  | "pub"                 { PUB }
+  | "self"                { SELF }
+  | "super"               { SUPER }
+  | "trait"               { TRAIT }
   | "while"               { WHILE }
   | "for"                 { FOR }
   | "loop"                { LOOP }

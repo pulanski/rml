@@ -6,7 +6,7 @@
 %token PLUS MINUS MULT DIV LANGLE RANGLE
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE SEMICOLON EQUAL COMMA COLON RARROW
 %token U32 F32
-%token RETURN FN VAR LET IF ELSE MUT FOR WHILE BREAK CONTINUE IN MATCH CASE TRUE FALSE VOID BOOL LOOP STRUCT ENUM
+%token RETURN FN VAR LET IF ELSE MUT FOR WHILE BREAK CONTINUE IN MATCH CASE TRUE FALSE VOID BOOL LOOP STRUCT ENUM TYPE TRAIT CONST IMPL USE AS PUB SELF SUPER
 %token <string> IDENT
 %token EOF
 
@@ -31,13 +31,40 @@ item:
   | func { FunctionItem $1 }
   | struct_def { StructItem $1 }
   | enum_def { EnumItem $1 }
+  | trait_def { TraitItem $1 }
 
-// program:
-// | func_list EOF { $1 }
+trait_def:
+  | TRAIT IDENT LBRACE trait_items RBRACE { { trait_name = $2; items = $4 } }
+  ;
 
-// func_list:
-// | func func_list { $1 :: $2 }
-// |  { [] }
+trait_items:
+  | trait_item trait_items { $1 :: $2 }
+  | { [] }
+  ;
+
+trait_item:
+  | trait_func { TraitFunc $1 }
+  | trait_type { TraitType $1 }
+  | trait_const { TraitConst $1 }
+  ;
+
+trait_func:
+  | FN IDENT LPAREN params RPAREN RARROW return_type SEMICOLON {
+      { func_proto = { name = $2; params = $4; return_type = $7 }; default_impl = None }
+    }
+  | FN IDENT LPAREN params RPAREN RARROW return_type block {
+      { func_proto = { name = $2; params = $4; return_type = $7 }; default_impl = Some $8 }
+    }
+  ;
+
+trait_type:
+  | TYPE IDENT SEMICOLON { { type_name = $2; type_def = None } }
+  ;
+
+trait_const:
+  | CONST IDENT COLON ty SEMICOLON { { const_name = $2; const_type = $4; const_value = None } }
+  | CONST IDENT COLON ty EQUAL expr SEMICOLON { { const_name = $2; const_type = $4; const_value = Some $6 } }
+  ;
 
 func:
 | FN IDENT LPAREN params RPAREN RARROW return_type block {
