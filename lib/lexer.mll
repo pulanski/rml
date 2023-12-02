@@ -7,8 +7,14 @@ rule token = parse
   | "//" [^ '\n']* '\n'    { token lexbuf }  (* Skip comments *)
   | "//!" [^ '\n']* '\n'  { token lexbuf }   (* Skip //! comments *)
   | "/*"                  { comment lexbuf } (* Skip block comments *)
+  | "::"                  { PATH_SEP }
   | '+'                   { PLUS }
   | '-'                   { MINUS }
+  | '#'                   { HASH }
+  | '^'                   { CARET }
+  | '!'                   { BANG }
+  | '&'                   { AMP }
+  | '|'                   { PIPE }
   | '*'                   { MULT }
   | '/'                   { DIV }
   | '<'                   { LANGLE }
@@ -22,7 +28,7 @@ rule token = parse
   | "->"                  { RARROW }
   | ';'                   { SEMICOLON }
   | ':'                   { COLON }
-  | '='                   { EQUAL }
+  | '='                   { EQ }
   | ","                   { COMMA }
   | "return"              { RETURN }
   | "if"                  { IF }

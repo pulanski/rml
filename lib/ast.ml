@@ -9,6 +9,7 @@ and item =
 and trait_def = {
   trait_name: string;
   items: trait_item list;
+  trait_attributes: attribute list;
 }
 
 and trait_item =
@@ -35,6 +36,7 @@ and trait_const = {
 and func = {
   proto: prototype;
   body: stmt list;
+  func_attributes: attribute list;
 }
 
 and mutable_flag =
@@ -50,11 +52,13 @@ and prototype = {
 and struct_def = {
   struct_name: string;
   fields: (string * ty) list;  (* Field name and its type *)
+  struct_attributes: attribute list;
 }
 
 and enum_def = {
   enum_name: string;
   variants: (string * ty option) list;  (* Variant name and optional associated type *)
+  enum_attributes: attribute list;
 }
 
 and stmt =
@@ -85,6 +89,23 @@ and pattern =
   | VariablePattern of string
   | TuplePattern of pattern list
   | CustomPattern of string * pattern list  (* For matching user-defined types *)
+
+and attribute =
+  | InnerAttribute of attr
+  | OuterAttribute of attr
+
+and attr = {
+  path: simple_path;
+  input: attr_input option;
+}
+
+and attr_input =
+  | AttrExpr of expr
+  (* possibly other types of input *)
+
+and simple_path = simple_path_segment list
+
+and simple_path_segment = string  (* possibly extend this to include more complex path segments *)
 
 and expr =
   | Variable of string
