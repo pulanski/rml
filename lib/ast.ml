@@ -148,7 +148,6 @@ and expr =
   | Lambda of lambda  (* Lambda expression for anonymous functions *)
   | Literal of literal
   (* | Literal of data_type <- TODO: figure out how we want to do user-defined types *)
-  (* | Tuple of expr list *)
   | RangeExpr of range_expr
   | ArrayExpr of array_expr
   | IndexExpr of expr * expr
@@ -159,6 +158,10 @@ and expr =
   | Deref of expr
   | ErrorProp of expr
   | CompoundAssign of binop * expr * expr
+  | TupleExpr of expr list
+  | TupleIndexExpr of expr * int
+  | MethodCall of expr * string * expr list
+  | FieldAccess of expr * string
 
 and array_expr =
   | ArrayLit of expr list

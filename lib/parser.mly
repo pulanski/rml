@@ -192,18 +192,35 @@ shape:
 | INTEGER_LITERAL { [(int_of_string $1)] }
 | INTEGER_LITERAL COMMA shape { (int_of_string $1) :: $3 }
 
+// https://doc.rust-lang.org/stable/reference/expressions.html
 expr:
 | literal_expr { Literal ($1) }
-| range_expr { RangeExpr ($1) }
+// | path_expr { PathExpr ($1) } TODO: support path expressions
+| operator_expr { $1 }
+| grouped_expr { $1 }
 | array_expr { ArrayExpr ($1) }
+// | await_expr { $1 } TODO: support async/await
 | index_expr { $1 }
+| tuple_expr { TupleExpr ($1) }
+| tuple_index_expr { $1 }
+// struct_expr { $1 } TODO: support struct expressions
+| call_expr { $1 }
+| method_call_expr { $1 }
+| field_expr { $1 }
+// | closure_expr { $1 } TODO: support closures
+// | async_block_expr { $1 } TODO: support async blocks
+// | continue_expr { $1 } TODO: support continue
+// | break_expr { $1 } TODO: support break
+| range_expr { RangeExpr ($1) }
+// | return_expr { $1 } TODO: support return
+// | underscore_expr { $1 } TODO: support underscore
+// | macro_invocation { $1 } TODO: support macro invocations
 | IDENT { Variable $1 }
-| IDENT LPAREN expr_list RPAREN { Call ($1, $3) }
-| LPAREN expr RPAREN { $2 }
-// | expr DOT IDENT { FieldAccess ($1, $3) }
 | LBRACKET tensor_list RBRACKET { Tensor ($2) }
 | IDENT LBRACE field_init_list RBRACE { StructInit ($1, $3) }
-// TODO: refactor the below into a single operator_expr rule
+// | yield_expr { $1 } TODO: support yield
+
+operator_expr:
 | borrow_expr { $1 }
 | deref_expr { $1 }
 | error_propagation_expr { $1 }
@@ -213,6 +230,26 @@ expr:
 | lazy_bool_expr { $1 }
 // | type_cast_expr { $1 } TODO: support type casts
 | compound_assign_expr { $1 }
+
+field_expr:
+| expr DOT IDENT { FieldAccess ($1, $3) }
+
+method_call_expr:
+| expr DOT IDENT LPAREN expr_list RPAREN { MethodCall ($1, $3, $5) }
+// | expr DOT path_expr_segment LPAREN call_params RPAREN { MethodCall ($1, $3, $5) }
+
+call_expr:
+| IDENT LPAREN expr_list RPAREN { Call ($1, $3) } // TODO: add support for trailing commas here and in other places
+// | expr LPAREN expr_list RPAREN { Call ($1, $3) }
+
+tuple_index_expr:
+| expr DOT INTEGER_LITERAL { TupleIndexExpr ($1, int_of_string $3) }
+
+tuple_expr:
+| LPAREN expr_list RPAREN { $2 }
+
+grouped_expr:
+| LPAREN expr RPAREN { $2 }
 
 compound_assign_expr:
 | expr PLUSEQ expr { CompoundAssign (Add, $1, $3) }
