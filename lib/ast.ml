@@ -152,7 +152,32 @@ and simple_path = simple_path_segment list
 
 and simple_path_segment = string  (* possibly extend this to include more complex path segments *)
 
+and path_expr =
+  | PathInExpr of path
+  | QualifiedPathInExpr of qualified_path
+
+and path = path_segment list
+and path_segment =
+  | PathIdentSegment of path_ident_segment
+  | PathExprSegment of path_ident_segment * generic_arg list (* Represents generic arguments in a path *)
+
+and path_ident_segment =
+  | PathIdent of string
+  | Self
+  | Super
+  | Crate
+
+and generic_arg =
+  | TyArg of ty
+  | LitArg of literal
+
+and qualified_path =
+  | QualifiedPath of ty * path (* Represents a fully qualified path with a type and a path *)
+
 and expr =
+  | Literal of literal
+  | PathExpr of path_expr
+  | QualifiedPathExpr of qualified_path
   | Variable of string
   | Call of string * expr list
   (* | Call of expr * expr list  Function call with function expression and arguments *)
@@ -161,7 +186,6 @@ and expr =
   | BinOp of binop * expr * expr
   | Tensor of expr list
   | Lambda of lambda  (* Lambda expression for anonymous functions *)
-  | Literal of literal
   (* | Literal of data_type <- TODO: figure out how we want to do user-defined types *)
   | RangeExpr of range_expr
   | ArrayExpr of array_expr
@@ -178,7 +202,6 @@ and expr =
   | MethodCall of expr * string * expr list
   | Return of expr option
   | FieldAccess of expr * string
-  | PathExpr of simple_path
 
 and array_expr =
   | ArrayLit of expr list

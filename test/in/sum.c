@@ -11,6 +11,8 @@ enum Bar {
 // Ignore module definition as C does not have a module system.
 
 int main() {
+  int b = 20;
+  int a = b;
   while (1) {
   
 }

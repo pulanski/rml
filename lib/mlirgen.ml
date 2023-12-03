@@ -26,17 +26,20 @@ let rec emit_mlir_expr = function
   | IRCall (func_name, args) ->
       let args_str = String.concat ", " (List.map emit_mlir_expr args) in
       Printf.sprintf "%s(%s)" func_name args_str
+  | IRLiteral x ->
+      (match x with
+      (* TODO: here check the size of the num and then dynamically generate the type here *)
+        | IRInt x -> Printf.sprintf "arith.constant %d : i64" x
+        | IRFloat x -> Printf.sprintf "arith.constant %f : f64" x
+        | IRBool x -> Printf.sprintf "arith.constant %b : i1" x
+        | IRChar x -> Printf.sprintf "arith.constant %d : i8" (Char.code x)
+        | IRString x -> Printf.sprintf "arith.constant \"%s\" : string" x
+        | IRNull -> "arith.constant null : i64"
+        | IRVoid -> "arith.constant null : i64")
   | IRTensor (shape, elements) ->
     let shape_str = String.concat "x" (List.map string_of_int shape) in
     let elements_str = String.concat ", " (List.map emit_mlir_expr elements) in
     Printf.sprintf "rml.constant dense<[%s]> : tensor<%sxf64>" elements_str shape_str
-  | IRLiteral x -> match x with
-  (* TODO: here check the size of the num and then dynamically generate the type here *)
-    | IRInt x -> Printf.sprintf "arith.constant %d : i64" x
-    | IRFloat x -> Printf.sprintf "arith.constant %f : f64" x
-    | IRBool x -> Printf.sprintf "arith.constant %b : i1" x
-    | IRChar x -> Printf.sprintf "arith.constant %d : i8" (Char.code x)
-    | IRString x -> Printf.sprintf "arith.constant \"%s\" : string" x
     (* | IRTuple elements ->
       let elements_str = String.concat ", " (List.map emit_mlir_expr elements) in
       Printf.sprintf "(%s)" elements_str

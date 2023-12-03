@@ -8,6 +8,7 @@ rule token = parse
   | "//!" [^ '\n']* '\n'  { token lexbuf }   (* Skip //! comments *)
   | "/*"                  { comment lexbuf } (* Skip block comments *)
   | "::"                  { PATH_SEP }
+  | '_'                   { UNDERSCORE }
   | '+'                   { PLUS }
   | '-'                   { MINUS }
   | "+="                  { PLUSEQ }

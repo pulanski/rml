@@ -80,6 +80,10 @@ and ir_expr =
   | IRCall of string * ir_expr list
   | IRBinOp of ir_binop * ir_expr * ir_expr
   | IRTensor of ir_shape * ir_expr list
+  | IRStructInit of string * (string * ir_expr) list
+  | IREnumInit of string * string * (string * ir_expr) list
+  | IRLambda of ir_param list * ir_stmt list
+  | IRRange of ir_expr * ir_expr
 
 and ir_literal =
   | IRInt of int

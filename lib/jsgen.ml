@@ -12,18 +12,20 @@ let rec emit_js_expr = function
   | IRBinOp (op, e1, e2) ->
     let op = emit_js_binop op in
     Printf.sprintf "%s %s %s" (emit_js_expr e1) op (emit_js_expr e2)
+  (* | IRLiteral lit ->
+      match lit with
+      | IRInt i -> string_of_int i
+      | IRFloat f -> string_of_float f
+      | IRBool b -> string_of_bool b
+      | IRString s -> "\"" ^ s ^ "\""
+      | IRChar c -> "'" ^ Char.escaped c ^ "'"
+      | IRNull -> "null"
+      | IRVoid -> "undefined" *)
   | IRTensor (_shape, elems) ->
     let elems_str = String.concat ", " (List.map emit_js_expr elems) in
     Printf.sprintf "[%s]" elems_str
-  | IRLiteral lit ->
-    match lit with
-    | IRInt i -> string_of_int i
-    | IRFloat f -> string_of_float f
-    | IRBool b -> string_of_bool b
-    | IRString s -> "\"" ^ s ^ "\""
-    | IRChar c -> "'" ^ Char.escaped c ^ "'"
-    | IRNull -> "null"
-    | IRVoid -> "undefined"
+  | _ -> failwith "Not yet implemented"
+
   (* TODO: Add support for the following *)
   (* | IRIndex (e, i) -> Printf.sprintf "%s[%s]" (emit_js_expr e) (emit_js_expr i) *)
   (* | IRIndexSlice (e, i1, i2) -> Printf.sprintf "%s[%s:%s]" (emit_js_expr e) (emit_js_expr i1) (emit_js_expr i2) *)
