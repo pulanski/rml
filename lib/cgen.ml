@@ -15,19 +15,6 @@ let emit_c_type = function
       Printf.sprintf "%s (%s)" return_ty_str params_str *)
 
 let rec emit_c_expr = function
-  | IRU8 x -> string_of_int x
-  | IRU16 x -> string_of_int x
-  | IRU32 x -> string_of_int x
-  | IRU64 x -> string_of_int x
-  | IRI8 x -> string_of_int x
-  | IRI16 x -> string_of_int x
-  | IRI32 x -> string_of_int x
-  | IRI64 x -> string_of_int x
-  | IRF32 x -> string_of_float x
-  | IRF64 x -> string_of_float x
-  | IRChar x -> "'" ^ Char.escaped x ^ "'"
-  | IRString x -> "\"" ^ x ^ "\""
-  | IRBool x -> if x then "1" else "0"
   | IRVariable x -> x
   | IRCall (func_name, args) ->
       let args_c = String.concat ", " (List.map emit_c_expr args) in
@@ -39,6 +26,15 @@ let rec emit_c_expr = function
   | IRTensor (_dims, values) ->
       let values_c = String.concat ", " (List.map emit_c_expr values) in
       Printf.sprintf "tensor(%s) TODO: impl me" values_c
+  | IRLiteral x ->
+    match x with
+    | IRInt x -> string_of_int x
+    | IRFloat x -> string_of_float x
+    | IRBool x -> if x then "1" else "0"
+    | IRChar x -> "'" ^ Char.escaped x ^ "'"
+    | IRString x -> "\"" ^ x ^ "\""
+    | IRNull -> "NULL"
+    | IRVoid -> "void"
 
 and emit_c_binop = function
   | IRAdd -> "+"

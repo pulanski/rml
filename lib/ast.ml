@@ -16,6 +16,17 @@ and module_def = {
   module_attributes: attribute list;
 }
 
+and literal =
+  | LitChar of char
+  | LitString of string
+  | LitRawString of string
+  | LitByte of char
+  | LitByteString of string
+  | LitRawByteString of string
+  | LitInteger of int
+  | LitFloat of float
+  | LitBool of bool
+
 and trait_def = {
   trait_name: string;
   items: trait_item list;
@@ -125,7 +136,8 @@ and expr =
   | BinOp of binop * expr * expr
   | Tensor of expr list
   | Lambda of lambda  (* Lambda expression for anonymous functions *)
-  | Literal of data_type
+  | Literal of literal
+  (* | Literal of data_type <- TODO: figure out how we want to do user-defined types *)
   (* | Tuple of expr list *)
   | RangeExpr of range_expr
 
@@ -148,6 +160,11 @@ and binop =
   | Mul
   | Div
   | Mod
+  | And
+  | Or
+  | Xor
+  | Shl
+  | Shr
   | Pow
   | Eq
   | Neq
@@ -155,8 +172,6 @@ and binop =
   | Gt
   | Leq
   | Geq
-  | And
-  | Or
 
 and data_type =
   | I8 of int

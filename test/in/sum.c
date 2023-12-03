@@ -14,7 +14,7 @@ int add(int a, int b) {
   return (a + b);
 }
 int main() {
-  int e = 42.;
+  int e = 42;
   return e;
 }
 struct Trait {

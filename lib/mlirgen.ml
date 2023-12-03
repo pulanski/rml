@@ -23,16 +23,6 @@ let rec emit_mlir_expr = function
       let rhs_ssa = emit_mlir_expr rhs in
       let result_var = fresh_var () in
       Printf.sprintf "%s = %s %s, %s : f64" result_var (emit_op op) lhs_ssa rhs_ssa
-  | IRU8 x -> Printf.sprintf "arith.constant %d : i8" x
-  | IRU16 x -> Printf.sprintf "arith.constant %d : i16" x
-  | IRU32 x -> Printf.sprintf "arith.constant %d : i32" x
-  | IRU64 x -> Printf.sprintf "arith.constant %d : i64" x
-  | IRI8 x -> Printf.sprintf "arith.constant %d : i8" x
-  | IRI16 x -> Printf.sprintf "arith.constant %d : i16" x
-  | IRI32 x -> Printf.sprintf "arith.constant %d : i32" x
-  | IRI64 x -> Printf.sprintf "arith.constant %d : i64" x
-  | IRF32 x -> Printf.sprintf "arith.constant %f : f32" x
-  | IRF64 x -> Printf.sprintf "arith.constant %f : f64" x
   | IRCall (func_name, args) ->
       let args_str = String.concat ", " (List.map emit_mlir_expr args) in
       Printf.sprintf "%s(%s)" func_name args_str
@@ -40,7 +30,20 @@ let rec emit_mlir_expr = function
     let shape_str = String.concat "x" (List.map string_of_int shape) in
     let elements_str = String.concat ", " (List.map emit_mlir_expr elements) in
     Printf.sprintf "rml.constant dense<[%s]> : tensor<%sxf64>" elements_str shape_str
-  | _ -> failwith "not implemented"
+  | IRLiteral x -> match x with
+  (* TODO: here check the size of the num and then dynamically generate the type here *)
+    | IRInt x -> Printf.sprintf "arith.constant %d : i64" x
+    | IRFloat x -> Printf.sprintf "arith.constant %f : f64" x
+    | IRBool x -> Printf.sprintf "arith.constant %b : i1" x
+    | IRChar x -> Printf.sprintf "arith.constant %d : i8" (Char.code x)
+    | IRString x -> Printf.sprintf "arith.constant \"%s\" : string" x
+    (* | IRTuple elements ->
+      let elements_str = String.concat ", " (List.map emit_mlir_expr elements) in
+      Printf.sprintf "(%s)" elements_str
+    | IRCustom (name, elements) ->
+      let elements_str = String.concat ", " (List.map emit_mlir_expr elements) in
+      Printf.sprintf "%s(%s)" name elements_str *)
+    | _ -> failwith "not implemented"
 
 and emit_op = function
   | IRAdd -> "rml.add"
