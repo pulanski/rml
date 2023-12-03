@@ -6,7 +6,7 @@
 %token PLUSEQ MINUSEQ STAREQ DIVEQ MODEQ ANDEQ OREQ XOREQ SHLEQ SHREQ
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE SEMICOLON EQ COMMA COLON RARROW PATH_SEP BANG HASH CARET AMP PIPE SHL SHR PIPEPIPE AMPAMP
 %token U32 F32
-%token RETURN FN LET IF ELSE MUT FOR WHILE BREAK CONTINUE IN MATCH CASE TRUE FALSE VOID BOOL LOOP STRUCT ENUM TYPE TRAIT CONST IMPL USE AS PUB SELF SUPER MOD DO
+%token RETURN FN LET IF ELSE MUT FOR WHILE BREAK CONTINUE IN MATCH CASE TRUE FALSE VOID BOOL LOOP STRUCT ENUM TYPE TRAIT CONST IMPL USE AS PUB SELF SUPER MOD DO CRATE
 %token DOT DOTDOT DOTDOTEQ QUESTION EQEQ NOT_EQ LTEQ GTEQ
 %token <string> IDENT
 %token <string> STRING_LITERAL
@@ -44,6 +44,7 @@ item:
   // | attributes impl_def { ImplItem { $2 with impl_attributes = $1 } }
   | attributes module_def { ModuleItem { $2 with module_attributes = $1 } }
   | attributes use_decl { UseItem $2 }
+  | attributes type_alias { TypeAliasItem $2 }
 
 module_def:
   | MOD IDENT LBRACE item_list RBRACE {
@@ -191,6 +192,9 @@ tensor_type:
 shape:
 | INTEGER_LITERAL { [(int_of_string $1)] }
 | INTEGER_LITERAL COMMA shape { (int_of_string $1) :: $3 }
+
+type_alias:
+| TYPE IDENT EQ ty SEMICOLON { TypeAlias ($2, $4) }
 
 // https://doc.rust-lang.org/stable/reference/expressions.html
 expr:
@@ -381,6 +385,13 @@ attr:
 attr_input:
   | EQ expr { AttrExpr $2 }
   (* possibly other types of input *)
+
+visibility:
+  | PUB { Public }
+  | PUB LPAREN CRATE RPAREN { PubCrate }
+  | PUB LPAREN SELF RPAREN { PubSelf }
+  | PUB LPAREN SUPER RPAREN { PubSuper }
+  | PUB LPAREN simple_path RPAREN { PubPath $3 }
 
 simple_path:
   | simple_path_segment { [$1] }
