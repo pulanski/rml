@@ -94,6 +94,8 @@ and ir_of_type (ty: ty) : ir_type =
   | BoolTy -> IRBoolTy
   | TensorTy -> IRTensorTy
   | FuncTy _ -> IRFuncTy
+  | ArrayTy ty -> IRArrayTy (ir_of_type ty)
+  | CustomTy name -> IRCustomTy name
 
 and ir_of_param ((name, ty): (string * ty)) : ir_param =
   { name = name; param_type = ir_of_type ty }

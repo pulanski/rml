@@ -123,6 +123,8 @@ and ir_type =
   | IRTensorTy
   | IRFuncTy
   | IRTypeVar
+  | IRArrayTy of ir_type
+  | IRCustomTy of string
   (* TODO: propagate data to here, maybe *)
   (* | IRTensorTy of ir_shape * ir_type
   | IRFuncTy of ir_type list * ir_type

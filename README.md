@@ -43,7 +43,7 @@ As of the latest release, the compiler includes the following components and fea
 #### C Code Generation Support
 
 - Added support for translating Rust structs and enums into equivalent C structures and enumerations.
-- **TODO**: Module constructs are translated into separate C files or header files, respecting C's modular structure. (_Currently they're ignored_)
+- **TODO**: Module constructs are translated into separate C files or header files, respecting C's modular structure. (_Currently, they're ignored_)
 
 ### Core Language Features
 
@@ -57,10 +57,87 @@ As of the latest release, the compiler includes the following components and fea
 
 ## Usage
 
-**TODO:** Add instructions for building and running the compiler.
+### Installation
 
-- Describe how to install and compile programs written in the language.
-- Provide examples of simple programs and their usage.
+**TODO:** Add installation instructions.
+
+### Compiling Programs
+
+Compile Rust files to C or JavaScript using the `rml` command. Here are some examples:
+
+- **Compiling to C:**
+
+  ```shell
+  rml --emit c file.rs
+  ```
+
+  This generates `file.c` and `file.h` from `file.rs`.
+
+- **Compiling to JavaScript:**
+
+  ```shell
+  rml --emit js file.rs
+  ```
+
+  This generates `file.js` from `file.rs`.
+
+### Examples
+
+- **Rust Source (foo.rs):**
+
+  ```rust
+  // Rust code example
+  fn main() {
+      println!("Hello, world!");
+  }
+  ```
+
+- **Generated C Code (foo.c):**
+
+  ```c
+  // C code generated from Rust
+  #include "foo.h"
+  int main() {
+      printf("Hello, world!\n");
+      return 0;
+  }
+  ```
+
+- **Generated JavaScript Code (foo.js):**
+
+  ```javascript
+  // JavaScript code generated from Rust
+  console.log("Hello, world!");
+  ```
+
+## Future Development
+
+- Extending language features.
+- Compiler optimizations.
+- Integration with MLIR.
+- LLVM IR Lowering.
+- Expanded Rust feature support.
+
+## Command Line Interface Usage - `rml`
+
+```shell
+rml [OPTIONS] FILES...
+```
+
+### Options
+
+- `-o, --output`: Set the output file name.
+- `--emit`: Set the types of output to generate (e.g., 'c,mlir,js').
+- `-I`: Include directories.
+- `-v, --verbose`: Enable verbose mode.
+
+### Example
+
+```shell
+rml --emit c,js file1.rs
+```
+
+This command generates C and JavaScript code for `file1.rs`.
 
 ## Future Development
 

@@ -9,7 +9,7 @@ type environment = {
   traits: trait_def StringMap.t;
 }
 
-let data_type_to_ty = function
+let rec data_type_to_ty = function
   | I8 _ -> IntTy
   | I16 _ -> IntTy
   | I32 _ -> IntTy
@@ -25,9 +25,8 @@ let data_type_to_ty = function
   | Bool _ -> BoolTy
   | TTensor _ -> TensorTy
   | Function _proto -> FuncTy ([], VoidTy)
-  (* | Array dt -> ArrayTy (data_type_to_ty dt)
-  | Custom _ -> CustomTy *)
-  | _ -> failwith "Type not implemented"
+  | Array dt -> ArrayTy (data_type_to_ty dt)
+  | Custom custom_type -> CustomTy custom_type
 
 let rec type_of_expr env = function
   | Variable v ->
@@ -45,6 +44,14 @@ let rec type_of_expr env = function
       | e::_ -> type_of_expr env e)
   | Literal l -> type_of_literal l
   | Lambda lambda -> type_of_lambda env lambda
+  | TupleExpr exprs ->
+      (* Assume all elements of tuple have same type; check first element *)
+      (match exprs with
+      | [] -> failwith "Empty tuple not allowed"
+      | e::_ -> type_of_expr env e)
+  | Return (Some expr) ->
+      ignore (type_of_expr env expr); VoidTy
+  | Return None -> VoidTy
   | _ -> failwith "Type not implemented"
   (* Add other cases as necessary *)
 
@@ -224,7 +231,15 @@ and analyze_stmt env = function
       ignore (type_of_expr env cond);
       let _body_env = analyze_stmt_list env body in
       env  (* TODO: or body_env if want to consider changes in the loop *)
+  | Break -> env
+  | Continue -> env
   | _ -> failwith "Not implemented"
+  (* | Match (expr, cases) ->
+      ignore (type_of_expr env expr);
+      let _ = List.map (analyze_case env) cases in
+      env
+  | _ -> failwith "Not implemented" *)
+  (* | _ -> failwith "Not implemented" *)
 
 and analyze_expr env expr =
   match expr with
@@ -240,7 +255,9 @@ and analyze_expr env expr =
       ignore (List.map (analyze_expr env) elems)
   | Literal _ -> ()
   | Lambda lambda -> analyze_lambda env lambda
-  | _ -> failwith "Type not implemented"
+  | TupleExpr exprs ->
+      ignore (List.map (analyze_expr env) exprs)
+  | _ -> failwith "Type noasdfasdft implemented"
   (* | StructInit (struct_name, field_inits) ->
       analyze_struct_init env struct_name field_inits
   | EnumInit (enum_name, variant, value_opt) ->

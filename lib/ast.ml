@@ -117,7 +117,9 @@ and ty =
   | FloatTy
   | BoolTy
   | TensorTy
+  | ArrayTy of ty
   | FuncTy of ty list * ty  (* Function type: list of argument types and return type *)     (* case pattern -> block *)
+  | CustomTy of string  (* For user-defined types *)
 
 and pattern =
   | LiteralPattern of data_type
