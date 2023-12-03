@@ -90,7 +90,8 @@ let rec emit_c_stmt = function
   | IRLoop body ->
       let body_c = String.concat "\n  " (List.map emit_c_stmt body) in
       Printf.sprintf "while (1) {\n  %s\n}" body_c
-  (* | IRBreak -> "break;" *)
+  | IRBreak -> "break;"
+  | IRContinue -> "continue;"
   (* Extend with more statement types as needed *)
 
 and emit_c_case case =
@@ -122,9 +123,9 @@ and emit_c_trait trait_def =
   ) trait_def.ir_methods in
   Printf.sprintf "struct %s {\n%s\n};" trait_def.ir_trait_name (String.concat "\n" method_declarations)
 
-and emit_c_item = function
+and emit_c_item for_header = function
   | IRFunc func -> emit_c_function func
-  | IRStructDef struct_def -> emit_c_struct struct_def
+  | IRStructDef struct_def -> if for_header then emit_c_struct struct_def else "// Struct definition omitted in source file\n"
   | IREnumDef enum_def -> emit_c_enum enum_def
   | IRTraitDef trait_def -> emit_c_trait trait_def
   | IRModuleDef _module_def -> "// Ignore module definition as C does not have a module system.\n"
@@ -139,8 +140,8 @@ and emit_c_enum enum_def =
   let variants_str = String.concat ",\n  " (List.map fst enum_def.ir_variants) in
   Printf.sprintf "enum %s {\n  %s\n};" enum_def.ir_enum_name variants_str
 
-and emit_c ir_program =
-  let items_str = String.concat "\n" (List.map emit_c_item ir_program) in
+and emit_c for_header ir_program =
+  let items_str = String.concat "\n" (List.map (emit_c_item for_header) ir_program) in
   "// Generated C Program\n\n" ^ items_str
 
 (* Emit C header *)
@@ -181,7 +182,9 @@ and emit_c_source ir_program input_file =
   (* Use the base name of the file for the include statement *)
   let header_file_name = (Filename.remove_extension (Filename.basename input_file)) ^ ".h" in
   Buffer.add_string buffer (Printf.sprintf "#include \"%s\"\n\n" header_file_name);
-  Buffer.add_string buffer (emit_c ir_program);
+
+  let source_contents = emit_c false ir_program in
+  Buffer.add_string buffer source_contents;
   Buffer.contents buffer
 
 and convert_function_signature func =

@@ -8,6 +8,11 @@ and ir_item =
   | IRModuleDef of ir_module_def
   (* Add other item types as necessary *)
 
+and ir_case = {
+  ir_case_pattern: ir_pattern;
+  ir_case_body: ir_stmt list;
+}
+
 and ir_function_signature = {
   func_sig_name: string;
   func_sig_params: ir_type list;
@@ -57,6 +62,8 @@ and ir_stmt =
   | IRMatch of ir_expr * ir_match_case list        (* match expression with cases *)
   | IRWhile of ir_expr * ir_stmt list              (* while condition do block *)
   | IRLoop of ir_stmt list                         (* loop block *)
+  | IRBreak
+  | IRContinue
 
 and ir_match_case =
   | IRCase of ir_pattern * ir_stmt list            (* case pattern -> block *)

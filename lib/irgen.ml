@@ -21,9 +21,21 @@ and ir_of_item (item: item) : ir_item =
   | TraitItem trait_def -> ir_of_trait trait_def
   | ModuleItem module_def -> ir_of_module module_def
 
-and ir_of_trait (_trait_def: trait_def) : ir_item =
-  failwith "TraitItem: Not yet implemented"
-  (* TODO: Possible implementation: List of function signatures *)
+and ir_of_trait (trait_def: trait_def) : ir_item =
+  IRTraitDef {
+    ir_trait_name = trait_def.trait_name;
+    ir_methods = List.map (fun trait_item ->
+      match trait_item with
+      | TraitFunc method_def -> {
+          func_sig_name = method_def.func_proto.name;
+          func_sig_params = List.map ir_of_type (List.map snd method_def.func_proto.params);
+          func_sig_return_type = ir_of_type method_def.func_proto.return_type
+        }
+      | _ -> failwith "Non-function items in trait not supported yet"
+    ) trait_def.items
+  }
+
+
 
 and ir_of_module (_module_def: module_def) : ir_item =
   let module_name = _module_def.module_name in
@@ -62,8 +74,6 @@ and ir_of_type (ty: ty) : ir_type =
   | TensorTy -> IRTensorTy
   | FuncTy _ -> IRFuncTy
 
-(* and ir_of_param (name, ty) : ir_param =
-  { name = name; param_type = ir_of_type ty } *)
 and ir_of_param ((name, ty): (string * ty)) : ir_param =
   { name = name; param_type = ir_of_type ty }
 
@@ -77,8 +87,20 @@ and ir_of_stmt (statement: stmt) : ir_stmt =
   | For (name, expr, body) -> IRFor (name, ir_of_expr expr, List.map ir_of_stmt body)
   | While (cond, body) -> IRWhile (ir_of_expr cond, List.map ir_of_stmt body)
   | Loop (body) -> IRLoop (List.map ir_of_stmt body)
-  (* | Match (expr, cases) -> IRMatch (ir_of_expr expr, List.map ir_of_case cases) *)
-  | _ -> failwith "IRStmt: Not implemented"
+  | Match (expr, cases) -> IRMatch (ir_of_expr expr, List.map ir_of_case cases)
+  | Break -> IRBreak
+  | Continue -> IRContinue
+
+and ir_of_case (case: case) : ir_match_case =
+  match case with
+  | Case (pattern, stmts) -> IRCase (ir_of_pattern pattern, List.map ir_of_stmt stmts)
+
+and ir_of_pattern (pattern: pattern) : ir_pattern =
+  match pattern with
+  | LiteralPattern lit -> IRLiteralPattern (ir_of_expr (Literal lit))
+  | VariablePattern name -> IRVariablePattern name
+  | TuplePattern pats -> IRTuplePattern (List.map ir_of_pattern pats)
+  | CustomPattern (name, pats) -> IRCustomPattern (name, List.map ir_of_pattern pats)
 
 and ir_of_expr (expression: expr) : ir_expr =
   match expression with
