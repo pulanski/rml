@@ -6,6 +6,16 @@ and item =
   | EnumItem of enum_def
   | TraitItem of trait_def
   | ModuleItem of module_def
+  | UseItem of use_decl
+
+and use_decl = use_tree
+
+and use_tree =
+  | SimplePathUseTree of simple_path
+  | NestedUseTree of simple_path * use_tree list
+  | GlobUseTree of simple_path
+  | RenamedUseTree of simple_path * string
+  | UseDecl of use_tree
 
 and case =
   | Case of pattern * stmt list

@@ -1,3 +1,6 @@
+use std::collections::hash_map;
+// use std::collections::hash_map::{self, HashMap};
+
 struct Foo {
     a: u32,
     b: u32,
@@ -28,6 +31,18 @@ fn add(a: u32, b: u32) -> u32 {
 }
 
 fn main() -> u32 {
+    loop {
+        // game loop
+        let life = 42;
+
+        if life < 0 {
+            // break;
+            let life = 42;
+        }
+
+        // life = life - 1;
+    }
+
     let e = 42;
     return e;
 } // TODO: improve scope analysis
@@ -69,18 +84,6 @@ trait Trait {
 
 // while true {
 //     let f = 2;
-// }
-
-// loop {
-//     // game loop
-//     let life = 42;
-
-//     if life < 0 {
-//         // break;
-//         let life = 42;
-//     }
-
-//     // life = life - 1;
 // }
 
 // // for i in 0..10 {

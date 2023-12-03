@@ -121,6 +121,7 @@ let rec analyze_program env = function
           let env = analyze_trait_def env trait_def in analyze_program env rest
       | ModuleItem module_def ->
           let env = analyze_module_def env module_def in analyze_program env rest
+      | UseItem _ -> analyze_program env rest (* TODO: add support for ensuring that the module is defined *)
       )
 
 and analyze_trait_def env trait_def =

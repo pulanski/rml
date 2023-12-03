@@ -2,7 +2,7 @@
 
 ## Overview
 
-<!-- [Your Language Name] is a modern programming language designed for performance and safety. The current implementation provides a foundation for a strongly typed, compiled language with a focus on clear syntax and powerful features. -->
+<!--The current implementation provides a foundation for a strongly typed, compiled language with a focus on clear syntax and powerful features. -->
 Transpiler designed to convert Rust source code into C and JavaScript.
 
 ## Current State of Implementation
@@ -40,12 +40,20 @@ As of the latest release, the compiler includes the following components and fea
 - Handles conversion of basic Rust constructs and idioms to their C/JS counterparts.
 - Basic support for variable declarations, arithmetic operations, conditionals, loops, and functions.
 
+#### C Code Generation Support
+
+- Added support for translating Rust structs and enums into equivalent C structures and enumerations.
+- **TODO**: Module constructs are translated into separate C files or header files, respecting C's modular structure. (_Currently they're ignored_)
+
 ### Core Language Features
 
 - **Data Types:** Supports integers, floats, characters, strings, and booleans.
 - **Control Structures:** Includes if-else statements, while loops, for loops, and basic pattern matching.
 - **Functions:** Support for function declarations with typed parameters and return types.
 - **Expressions:** Includes binary operations, literals, and variable references.
+- **Structs**: Initial parsing and code generation support for Rust structs, including field definitions and initialization.
+- **Enums**: Basic handling of enums, including variant parsing and generation in target languages.
+- **Modules**: Support for module syntax, enabling organized code structure and separate compilation units.
 
 ## Usage
 
@@ -61,3 +69,10 @@ As of the latest release, the compiler includes the following components and fea
 - **MLIR Support:** Plan to integrate with MLIR (Multi-Level Intermediate Representation) for advanced optimizations and targeting a wider range of backends.
 - **LLVM IR Lowering:** Aim to lower the IR to LLVM IR, opening the possibility of leveraging LLVM's powerful optimizations and targeting numerous platforms and architectures.
 - **Expanded Rust Feature Support:** Ongoing work to support more complex Rust features, including advanced traits, generics, and async/await.
+
+### Planned Language/Compiler Features
+
+#### Optimization Hints
+
+- Identifies potential optimization opportunities, such as constant folding and unused code elimination.
+- These hints are used in later stages for optimizing the generated C and JavaScript code.

@@ -20,7 +20,7 @@ rule token = parse
   | '!'                   { BANG }
   | '&'                   { AMP }
   | '|'                   { PIPE }
-  | '*'                   { MULT }
+  | '*'                   { STAR }
   | '/'                   { DIV }
   | '<'                   { LANGLE }
   | '>'                   { RANGLE }
