@@ -7,9 +7,12 @@ let emit_c_type = function
   | IRBoolTy -> "bool"
   | IRCharTy -> "char"
   | IRStringTy -> "char*"
-  | IRTensorTy -> "TODO: impl me"
-  | IRFuncTy -> "TODO: impl me"
-  | IRTypeVar -> "TODO: impl me"
+  | IRTensorTy -> "" (* TODO: impl me *)
+  | _ -> failwith "TODO: Emit C type"
+  (* | IRFuncTy (params, return_ty) ->
+      let params_str = String.concat ", " (List.map emit_c_type params) in
+      let return_ty_str = emit_c_type return_ty in
+      Printf.sprintf "%s (%s)" return_ty_str params_str *)
 
 let rec emit_c_expr = function
   | IRU8 x -> string_of_int x
@@ -113,13 +116,19 @@ and emit_c_function func =
   let body_str = String.concat "\n  " (List.map emit_c_stmt func.body) in
   Printf.sprintf "%s %s(%s) {\n  %s\n}" return_type_str func.func_name params_str body_str
 
+and emit_c_trait trait_def =
+  let method_declarations = List.map (fun method_sig ->
+    Printf.sprintf "    %s (*%s)();" (emit_c_type method_sig.func_sig_return_type) method_sig.func_sig_name
+  ) trait_def.ir_methods in
+  Printf.sprintf "struct %s {\n%s\n};" trait_def.ir_trait_name (String.concat "\n" method_declarations)
+
 and emit_c_item = function
   | IRFunc func -> emit_c_function func
   | IRStructDef struct_def -> emit_c_struct struct_def
   | IREnumDef enum_def -> emit_c_enum enum_def
-  | IRTraitDef _trait_def -> "TODO: impl me"
+  | IRTraitDef trait_def -> emit_c_trait trait_def
+  | IRModuleDef _module_def -> "// Ignore module definition as C does not have a module system.\n"
   (* | IRImplDef impl_def -> "TODO: impl me" *)
-  | IRModuleDef _module_def -> "TODO: impl me"
   (* Add other item types as necessary *)
 
 and emit_c_struct struct_def =
@@ -135,9 +144,12 @@ and emit_c ir_program =
   "// Generated C Program\n\n" ^ items_str
 
 (* Emit C header *)
-and emit_c_header ir_program =
-  let buffer = Buffer.create 1024 in
-  Buffer.add_string buffer "#ifndef MY_HEADER_H\n#define MY_HEADER_H\n\n";
+and emit_c_header ir_program input_file =
+   let buffer = Buffer.create 1024 in
+  (* Extract base name without extension for header guard *)
+  let base_name = Filename.remove_extension (Filename.basename input_file) in
+  let header_guard = String.uppercase_ascii base_name ^ "_H" in
+  Buffer.add_string buffer (Printf.sprintf "#ifndef %s\n#define %s\n\n" header_guard header_guard);
 
   (* Add struct declarations to header file *)
   let add_struct_declaration struct_def buffer =
@@ -159,16 +171,17 @@ and emit_c_header ir_program =
     | _ -> ()  (* Ignore other IR items for header file *)
   ) ir_program;
 
-  Buffer.add_string buffer "\n#endif /* MY_HEADER_H */\n";
+  Buffer.add_string buffer (Printf.sprintf "\n#endif /* %s */\n" header_guard);
   Buffer.contents buffer
 
 
 (* Emit C source *)
-and emit_c_source ir_program =
+and emit_c_source ir_program input_file =
   let buffer = Buffer.create 1024 in
-  Buffer.add_string buffer "#include \"my_header.h\"\n\n";
+  (* Use the base name of the file for the include statement *)
+  let header_file_name = (Filename.remove_extension (Filename.basename input_file)) ^ ".h" in
+  Buffer.add_string buffer (Printf.sprintf "#include \"%s\"\n\n" header_file_name);
   Buffer.add_string buffer (emit_c ir_program);
-
   Buffer.contents buffer
 
 and convert_function_signature func =
