@@ -78,16 +78,6 @@ field_defs:
 field_def:
   | IDENT COLON ty { ($1, $3) }
 
-ty:
-| U32 { IntTy }
-| F32 { FloatTy }
-| BOOL { BoolTy }
-// | tensor_type { TensorTy $1 }
-| tensor_type { TensorTy }
-| VOID { VoidTy }
-// TODO: support first-class functions
-// | FN LPAREN params RPAREN RARROW ty { FuncTy ($3, $6) }
-
 /* Enum Definitions */
 enum_item:
   | attributes enum_def { EnumItem { $2 with enum_attributes = $1 } }
@@ -161,71 +151,9 @@ use_tree_list:
 type_alias:
 | TYPE IDENT EQ ty SEMICOLON { TypeAlias ($2, $4) }
 
-// item:
-//   | attributes func { FunctionItem { $2 with func_attributes = $1 } }
-//   | attributes struct_def { StructItem { $2 with struct_attributes = $1 } }
-//   | attributes enum_def { EnumItem { $2 with enum_attributes = $1 } }
-//   | attributes trait_def { TraitItem { $2 with trait_attributes = $1 } }
-//   // | attributes impl_def { ImplItem { $2 with impl_attributes = $1 } }
-//   | attributes module_def { ModuleItem { $2 with module_attributes = $1 } }
-//   | attributes use_decl { UseItem $2 }
-//   | attributes type_alias { TypeAliasItem $2 }
+/* Expressions and Statements */
 
-return_type:
-| VOID { VoidTy }
-| U32 { IntTy }
-| F32 { FloatTy }
-| BOOL { BoolTy }
-
-block:
-| LBRACE stmt_list RBRACE { $2 }
-
-stmt_list:
-| stmt stmt_list { $1 :: $2 }
-|  { [] }
-
-stmt:
-| LET opt_mut IDENT opt_type EQ expr SEMICOLON { VarDecl ($2, $3, $4, $6) }
-| RETURN expr SEMICOLON { Return (Some $2) }
-| if_stmt { $1 }
-| WHILE expr block { While ($2, $3) }
-| LOOP block { Loop ($2) }
-| FOR IDENT IN expr block { For ($2, $4, $5) }
-| MATCH expr LBRACE match_cases RBRACE { Match ($2, $4) }
-| expr { Expr ($1) }
-| BREAK SEMICOLON { Break }
-
-if_stmt:
-  | IF expr block else_clause { If ($2, $3, $4) }
-;
-
-else_clause:
-| ELSE block { $2 }
-| ELSE if_stmt { [$2] }
-| (* empty *) { [] }
-
-match_cases:
-| match_case match_cases { $1 :: $2 }
-| match_case { [$1] }
-
-match_case:
-| CASE pattern RARROW block { Case ($2, $4) }
-
-pattern:
-| IDENT { VariablePattern $1 }
-(* Other patterns *)
-
-opt_tensor_type:
-| (* empty *) { None }
-| tensor_type { Some (TTensor $1) }
-
-tensor_type:
-| LANGLE shape RANGLE { { shape = $2 } }
-
-shape:
-| INTEGER_LITERAL { [(int_of_string $1)] }
-| INTEGER_LITERAL COMMA shape { (int_of_string $1) :: $3 }
-
+// Expressions
 // https://doc.rust-lang.org/stable/reference/expressions.html
 expr:
 | literal_expr { Literal ($1) }
@@ -363,6 +291,86 @@ range_expr:
   | DOTDOT { RangeFull }                                (* .. *)
   | expr DOTDOTEQ expr { RangeInclusive($1, $3) }       (* start..=end *)
   | DOTDOTEQ expr { RangeToInclusive($2) }              (* ..=end *)
+
+// Statements
+// https://doc.rust-lang.org/stable/reference/statements.html
+stmt:
+| SEMICOLON { Empty }
+| declaration_stmt { $1 }
+| RETURN expr SEMICOLON { Return (Some $2) }
+| if_stmt { $1 }
+| WHILE expr block { While ($2, $3) }
+| LOOP block { Loop ($2) }
+| FOR IDENT IN expr block { For ($2, $4, $5) }
+| MATCH expr LBRACE match_cases RBRACE { Match ($2, $4) }
+| expr { Expr ($1) }
+| BREAK SEMICOLON { Break }
+
+/* Declaration Statements */
+declaration_stmt:
+  | let_statement { $1 }
+  | item_declaration { $1 }
+
+item_declaration:
+  | item { ItemDecl $1 }
+
+let_statement:
+| LET opt_mut IDENT opt_type EQ expr SEMICOLON { VarDecl ($2, $3, $4, $6) }
+
+/* Types */
+ty:
+| U32 { IntTy }
+| F32 { FloatTy }
+| BOOL { BoolTy }
+// | tensor_type { TensorTy $1 }
+| tensor_type { TensorTy }
+| VOID { VoidTy }
+// TODO: support first-class functions
+// | FN LPAREN params RPAREN RARROW ty { FuncTy ($3, $6) }
+
+return_type:
+| VOID { VoidTy }
+| U32 { IntTy }
+| F32 { FloatTy }
+| BOOL { BoolTy }
+
+block:
+| LBRACE stmt_list RBRACE { $2 }
+
+stmt_list:
+| stmt stmt_list { $1 :: $2 }
+|  { [] }
+
+if_stmt:
+  | IF expr block else_clause { If ($2, $3, $4) }
+;
+
+else_clause:
+| ELSE block { $2 }
+| ELSE if_stmt { [$2] }
+| (* empty *) { [] }
+
+match_cases:
+| match_case match_cases { $1 :: $2 }
+| match_case { [$1] }
+
+match_case:
+| CASE pattern RARROW block { Case ($2, $4) }
+
+pattern:
+| IDENT { VariablePattern $1 }
+(* Other patterns *)
+
+opt_tensor_type:
+| (* empty *) { None }
+| tensor_type { Some (TTensor $1) }
+
+tensor_type:
+| LANGLE shape RANGLE { { shape = $2 } }
+
+shape:
+| INTEGER_LITERAL { [(int_of_string $1)] }
+| INTEGER_LITERAL COMMA shape { (int_of_string $1) :: $3 }
 
 field_init_list:
   | field_init COMMA field_init_list { $1 :: $3 }

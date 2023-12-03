@@ -111,6 +111,8 @@ and ir_of_stmt (statement: stmt) : ir_stmt =
   | Match (expr, cases) -> IRMatch (ir_of_expr expr, List.map ir_of_case cases)
   | Break -> IRBreak
   | Continue -> IRContinue
+  | ItemDecl _ -> failwith "ItemDecl not supported yet"
+  | Empty -> failwith "Empty not supported yet"
 
 and ir_of_case (case: case) : ir_match_case =
   match case with
