@@ -136,6 +136,7 @@ stmt:
 | FOR IDENT IN expr block { For ($2, $4, $5) }
 | MATCH expr LBRACE match_cases RBRACE { Match ($2, $4) }
 | expr { Expr ($1) }
+| BREAK SEMICOLON { Break }
 
 if_stmt:
   | IF expr block else_clause { If ($2, $3, $4) }

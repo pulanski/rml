@@ -91,6 +91,8 @@ let rec emit_mlir_stmt = function
       let expr_ssa = emit_mlir_expr expr in
       let cases_str = String.concat "\n  " (List.map emit_mlir_case cases) in
       Printf.sprintf "match %s {\n  %s\n}" expr_ssa cases_str
+  | IRBreak -> "break"
+  | IRContinue -> "continue"
 
 and emit_mlir_case = function
   | IRCase (pattern, stmts) ->

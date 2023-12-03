@@ -12,6 +12,14 @@ mod baz {
     fn foo() -> u32 {
         return 42;
     }
+
+    fn sum(a: u32, b: u32) -> u32 {
+        for i in 3 {
+            // if i == 5 {
+            break;
+            // }
+        }
+    }
 }
 
 fn add(a: u32, b: u32) -> u32 {
@@ -25,10 +33,10 @@ fn main() -> u32 {
 } // TODO: improve scope analysis
 
 // TODO: add support for sema and codegen on traits
-// trait Trait {
-// fn foo(&self) -> u32; // TODO: add support for references
-// fn foo() -> u32;
-// }
+trait Trait {
+    // fn foo(&self) -> u32; // TODO: add support for references
+    fn foo() -> u32;
+}
 
 // fn main() -> void {
 //     if true {

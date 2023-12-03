@@ -7,6 +7,9 @@ and item =
   | TraitItem of trait_def
   | ModuleItem of module_def
 
+and case =
+  | Case of pattern * stmt list
+
 and module_def = {
   module_name: string;
   module_items: item list;
@@ -74,9 +77,11 @@ and stmt =
   | VarDecl of mutable_flag * string * data_type option * expr
   | If of expr * stmt list * stmt list
   | For of string * expr * stmt list
-  | Match of expr * match_case list
+  | Match of expr * case list
   | While of expr * stmt list
   | Loop of stmt list
+  | Break
+  | Continue
 
 and ty =
   | VoidTy
@@ -86,10 +91,7 @@ and ty =
   | FloatTy
   | BoolTy
   | TensorTy
-  | FuncTy of ty list * ty  (* Function type: list of argument types and return type *)
-
-and match_case =
-  | Case of pattern * stmt list        (* case pattern -> block *)
+  | FuncTy of ty list * ty  (* Function type: list of argument types and return type *)     (* case pattern -> block *)
 
 and pattern =
   | LiteralPattern of data_type
