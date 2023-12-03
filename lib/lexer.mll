@@ -10,6 +10,9 @@ rule token = parse
   | "::"                  { PATH_SEP }
   | '+'                   { PLUS }
   | '-'                   { MINUS }
+  | '.'                   { DOT }
+  | ".."                  { DOTDOT }
+  | "..="                 { DOTDOTEQ }
   | '#'                   { HASH }
   | '^'                   { CARET }
   | '!'                   { BANG }
