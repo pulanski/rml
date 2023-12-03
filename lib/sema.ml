@@ -122,6 +122,7 @@ let rec analyze_program env = function
       | ModuleItem module_def ->
           let env = analyze_module_def env module_def in analyze_program env rest
       | UseItem _ -> analyze_program env rest (* TODO: add support for ensuring that the module is defined *)
+      | TypeAliasItem _ -> analyze_program env rest (* TODO: add support for type aliases *)
       )
 
 and analyze_trait_def env trait_def =

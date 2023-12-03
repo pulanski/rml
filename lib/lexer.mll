@@ -63,6 +63,7 @@ rule token = parse
   | "use"                 { USE }
   | "as"                  { AS }
   | "pub"                 { PUB }
+  | "crate"               { CRATE }
   | "self"                { SELF }
   | "super"               { SUPER }
   | "trait"               { TRAIT }

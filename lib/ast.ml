@@ -7,6 +7,10 @@ and item =
   | TraitItem of trait_def
   | ModuleItem of module_def
   | UseItem of use_decl
+  | TypeAliasItem of type_alias
+
+and type_alias =
+  | TypeAlias of string * ty
 
 and use_decl = use_tree
 
@@ -119,6 +123,14 @@ and pattern =
   | VariablePattern of string
   | TuplePattern of pattern list
   | CustomPattern of string * pattern list  (* For matching user-defined types *)
+
+and visibility =
+  | Public
+  | Private
+  | PubCrate
+  | PubSelf
+  | PubSuper
+  | PubPath of simple_path
 
 and attribute =
   | InnerAttribute of attr
