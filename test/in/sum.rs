@@ -1,4 +1,4 @@
-use std::collections::hash_map;
+// use std::collections::hash_map;
 // use std::collections::hash_map::{self, HashMap};
 
 struct Foo {
@@ -31,6 +31,9 @@ fn add(a: u32, b: u32) -> u32 {
 }
 
 fn main() -> u32 {
+    // simple array w/ 3 elements
+    let arr = [1, 2, 3];
+
     loop {
         // game loop
         let life = 42;
