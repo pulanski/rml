@@ -6,7 +6,7 @@
 %token PLUS MINUS MULT DIV LANGLE RANGLE
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE SEMICOLON EQ COMMA COLON RARROW PATH_SEP BANG HASH CARET AMP PIPE
 %token U32 F32
-%token RETURN FN VAR LET IF ELSE MUT FOR WHILE BREAK CONTINUE IN MATCH CASE TRUE FALSE VOID BOOL LOOP STRUCT ENUM TYPE TRAIT CONST IMPL USE AS PUB SELF SUPER
+%token RETURN FN LET IF ELSE MUT FOR WHILE BREAK CONTINUE IN MATCH CASE TRUE FALSE VOID BOOL LOOP STRUCT ENUM TYPE TRAIT CONST IMPL USE AS PUB SELF SUPER MOD DO
 %token <string> IDENT
 %token EOF
 
@@ -32,21 +32,25 @@ item:
   | attributes struct_def { StructItem { $2 with struct_attributes = $1 } }
   | attributes enum_def { EnumItem { $2 with enum_attributes = $1 } }
   | attributes trait_def { TraitItem { $2 with trait_attributes = $1 } }
+  // | attributes impl_def { ImplItem { $2 with impl_attributes = $1 } }
+  | attributes module_def { ModuleItem { $2 with module_attributes = $1 } }
+
+module_def:
+  | MOD IDENT LBRACE item_list RBRACE {
+      { module_name = $2; module_items = $4; module_attributes = [] }
+  }
 
 trait_def:
   | TRAIT IDENT LBRACE trait_items RBRACE { { trait_name = $2; items = $4; trait_attributes = [] } }
-  ;
 
 trait_items:
   | trait_item trait_items { $1 :: $2 }
   | { [] }
-  ;
 
 trait_item:
   | trait_func { TraitFunc $1 }
   | trait_type { TraitType $1 }
   | trait_const { TraitConst $1 }
-  ;
 
 trait_func:
   | FN IDENT LPAREN params RPAREN RARROW return_type SEMICOLON {
@@ -55,16 +59,13 @@ trait_func:
   | FN IDENT LPAREN params RPAREN RARROW return_type block {
       { func_proto = { name = $2; params = $4; return_type = $7 }; default_impl = Some $8 }
     }
-  ;
 
 trait_type:
   | TYPE IDENT SEMICOLON { { type_name = $2; type_def = None } }
-  ;
 
 trait_const:
   | CONST IDENT COLON ty SEMICOLON { { const_name = $2; const_type = $4; const_value = None } }
   | CONST IDENT COLON ty EQ expr SEMICOLON { { const_name = $2; const_type = $4; const_value = Some $6 } }
-  ;
 
 func:
 | FN IDENT LPAREN params RPAREN RARROW return_type block {
@@ -227,12 +228,10 @@ attributes:
 attribute:
   | HASH BANG LBRACKET attr RBRACKET { InnerAttribute $4 }
   | HASH BANG LBRACKET attr RBRACKET { OuterAttribute $4 }
-  ;
 
 attr:
   | simple_path attr_input { { path = $1; input = Some $2 } }
   | simple_path { { path = $1; input = None } }
-  ;
 
 attr_input:
   | EQ expr { AttrExpr $2 }
@@ -241,8 +240,6 @@ attr_input:
 simple_path:
   | simple_path_segment { [$1] }
   | simple_path PATH_SEP simple_path_segment { $1 @ [$3] }
-  ;
 
 simple_path_segment:
   | IDENT { $1 }
-  ;
