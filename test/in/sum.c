@@ -1,3 +1,5 @@
+#include "my_header.h"
+
 // Generated C Program
 
 struct Foo {

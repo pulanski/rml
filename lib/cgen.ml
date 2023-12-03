@@ -113,10 +113,6 @@ and emit_c_function func =
   let body_str = String.concat "\n  " (List.map emit_c_stmt func.body) in
   Printf.sprintf "%s %s(%s) {\n  %s\n}" return_type_str func.func_name params_str body_str
 
-(* let emit_c ir_program =
-  let functions_str = String.concat "\n" (List.map emit_c_function ir_program) in
-  "// Generated C Program\n\n" ^ functions_str *)
-
 and emit_c_item = function
   | IRFunc func -> emit_c_function func
   | IRStructDef struct_def -> emit_c_struct struct_def
@@ -137,3 +133,48 @@ and emit_c_enum enum_def =
 and emit_c ir_program =
   let items_str = String.concat "\n" (List.map emit_c_item ir_program) in
   "// Generated C Program\n\n" ^ items_str
+
+(* Emit C header *)
+and emit_c_header ir_program =
+  let buffer = Buffer.create 1024 in
+  Buffer.add_string buffer "#ifndef MY_HEADER_H\n#define MY_HEADER_H\n\n";
+
+  (* Add struct declarations to header file *)
+  let add_struct_declaration struct_def buffer =
+    let fields_str = String.concat ";\n  " (List.map (fun (name, ty) -> (emit_c_type ty) ^ " " ^ name) struct_def.ir_fields) in
+    Printf.sprintf "struct %s {\n  %s;\n};\n\n" struct_def.ir_struct_name fields_str |> Buffer.add_string buffer
+  in
+
+  (* Add function declarations to header file *)
+  let add_function_declaration func buffer =
+    let params_str = String.concat ", " (List.map (fun p -> (emit_c_type p.param_type) ^ " " ^ p.name) func.params) in
+    let return_type_str = emit_c_type func.return_type in
+    Printf.sprintf "%s %s(%s);\n" return_type_str func.func_name params_str |> Buffer.add_string buffer
+  in
+
+  (* Iterate over IR items and add declarations *)
+  List.iter (function
+    | IRStructDef struct_def -> add_struct_declaration struct_def buffer
+    | IRFunc func -> add_function_declaration func buffer
+    | _ -> ()  (* Ignore other IR items for header file *)
+  ) ir_program;
+
+  Buffer.add_string buffer "\n#endif /* MY_HEADER_H */\n";
+  Buffer.contents buffer
+
+
+(* Emit C source *)
+and emit_c_source ir_program =
+  let buffer = Buffer.create 1024 in
+  Buffer.add_string buffer "#include \"my_header.h\"\n\n";
+  Buffer.add_string buffer (emit_c ir_program);
+
+  Buffer.contents buffer
+
+and convert_function_signature func =
+  let params_str = String.concat ", " (List.map (fun p -> (emit_c_type p.param_type) ^ " " ^ p.name) func.params) in
+  emit_c_type func.return_type ^ " " ^ func.func_name ^ "(" ^ params_str ^ ")"
+
+and convert_function_body func =
+  let body_str = String.concat "\n  " (List.map emit_c_stmt func.body) in
+  "{\n  " ^ body_str ^ "\n}"
