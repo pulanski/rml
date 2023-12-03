@@ -13,7 +13,7 @@ enum Bar {
 
 mod baz {
     fn foo() -> u32 {
-        return 42;
+        // return 42; // TODO: handle refactor of return statements to return expressions
     }
 
     fn sum(a: u32, b: u32) -> u32 {
@@ -25,29 +25,32 @@ mod baz {
     }
 }
 
-fn add(a: u32, b: u32) -> u32 {
-    // a + b // TODO: add support for returning expressions
-    return a + b;
-}
+// fn add(a: u32, b: u32) -> u32 {
+//     // a + b // TODO: add support for returning expressions
+//     return a + b;
+// }
 
 fn main() -> u32 {
     // simple array w/ 3 elements
-    let arr = [1, 2, 3];
+    // TODO: add support for arrays (sema and codegen)
+    // let arr = [1, 2, 3];
+
+    // let foo = (0.0, 4.5);
 
     loop {
         // game loop
-        let life = 42;
+        // let life = 42;
 
-        if life < 0 {
-            // break;
-            let life = 42;
-        }
+        // if life < 0 {
+        // break;
+        // let life = 42;
+        // }
 
         // life = life - 1;
     }
 
-    let e = 42;
-    return e;
+    // let e = 42;
+    // return e;
 } // TODO: improve scope analysis
 
 // TODO: add support for sema and codegen on traits

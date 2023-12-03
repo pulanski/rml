@@ -1,3 +1,8 @@
+(* let print_warnings warnings =
+  List.iter (fun (loc, msg) ->
+    print_endline ("[WARNING] " ^ msg ^ " at " ^ (string_of_loc loc))
+  ) warnings *)
+
 let format_time duration =
   match duration with
   | t when t >= 60. -> Printf.sprintf "%.2f m" (t /. 60.)

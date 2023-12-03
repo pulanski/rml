@@ -2,7 +2,7 @@
  (name rml)
  (preprocess
   (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq ppx_jane))
- (libraries ounit2 menhirLib)
+ (libraries ounit2 menhirLib cmdliner)
  (inline_tests))
 
 (menhir
