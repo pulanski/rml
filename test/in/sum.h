@@ -1,5 +1,5 @@
-#ifndef MY_HEADER_H
-#define MY_HEADER_H
+#ifndef SUM_H
+#define SUM_H
 
 struct Foo {
   int a;
@@ -9,4 +9,4 @@ struct Foo {
 int add(int a, int b);
 int main();
 
-#endif /* MY_HEADER_H */
+#endif /* SUM_H */
