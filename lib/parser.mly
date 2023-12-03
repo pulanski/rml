@@ -157,7 +157,7 @@ type_alias:
 // https://doc.rust-lang.org/stable/reference/expressions.html
 expr:
 | literal_expr { Literal ($1) }
-// | path_expr { PathExpr ($1) } TODO: support path expressions
+// | path_expr { PathExpr ($1) }
 | operator_expr { $1 }
 | grouped_expr { $1 }
 | array_expr { ArrayExpr ($1) }
@@ -173,14 +173,21 @@ expr:
 // | async_block_expr { $1 } TODO: support async blocks
 // | continue_expr { $1 } TODO: support continue
 // | break_expr { $1 } TODO: support break
+// | loop_expr { $1 } TODO: support loop
 | range_expr { RangeExpr ($1) }
-// | return_expr { $1 } TODO: support return
+| return_expr { $1 }
 // | underscore_expr { $1 } TODO: support underscore
 // | macro_invocation { $1 } TODO: support macro invocations
 | IDENT { Variable $1 }
 | LBRACKET tensor_list RBRACKET { Tensor ($2) }
 | IDENT LBRACE field_init_list RBRACE { StructInit ($1, $3) }
 // | yield_expr { $1 } TODO: support yield
+
+// path_expr:
+
+return_expr:
+| RETURN expr { Return (Some $2) }
+| RETURN { Return None }
 
 operator_expr:
 | borrow_expr { $1 }
@@ -297,7 +304,6 @@ range_expr:
 stmt:
 | SEMICOLON { Empty }
 | declaration_stmt { $1 }
-| RETURN expr SEMICOLON { Return (Some $2) }
 | if_stmt { $1 }
 | WHILE expr block { While ($2, $3) }
 | LOOP block { Loop ($2) }
@@ -412,9 +418,33 @@ attributes:
   | attribute attributes { $1 :: $2 }
   | { [] }
 
+// TODO: support block exprs
+//   Syntax
+// BlockExpression :
+//    {
+//       InnerAttribute*
+//       Statements?
+//    }
+
+// Statements :
+//       Statement+
+//    | Statement+ ExpressionWithoutBlock
+//    | ExpressionWithoutBlock
+
+// block_expr:
+//   | inner_attrs stmt_list { BlockExpr ($2) }
+//   | inner_attrs stmt_list expr { BlockExpr ($2 @ [Expr $3]) }
+//   | inner_attrs expr { BlockExpr ([Expr $2]) }
+
 attribute:
+  | inner_attribute { $1 }
+  | outer_attribute { $1 }
+
+inner_attribute:
   | HASH BANG LBRACKET attr RBRACKET { InnerAttribute $4 }
-  | HASH BANG LBRACKET attr RBRACKET { OuterAttribute $4 }
+
+outer_attribute:
+  | HASH LBRACKET attr RBRACKET { OuterAttribute $3 }
 
 attr:
   | simple_path attr_input { { path = $1; input = Some $2 } }

@@ -101,8 +101,9 @@ and ir_of_param ((name, ty): (string * ty)) : ir_param =
 and ir_of_stmt (statement: stmt) : ir_stmt =
   match statement with
   | Expr expr -> IRExpr (ir_of_expr expr)
-  | Return (Some expr) -> IRReturn (ir_of_expr expr)
-  | Return None -> IRReturn (IRLiteral (IRInt 0))
+  (* TODO: move to expr *)
+  (* | Return (Some expr) -> IRReturn (ir_of_expr expr)
+  | Return None -> IRReturn (IRLiteral (IRInt 0)) *)
   | VarDecl (_, name, _, expr) -> IRVarDecl (name, ir_of_expr expr)
   | If (cond, then_stmts, else_stmts) -> IRIf (ir_of_expr cond, List.map ir_of_stmt then_stmts, List.map ir_of_stmt else_stmts)
   | For (name, expr, body) -> IRFor (name, ir_of_expr expr, List.map ir_of_stmt body)

@@ -98,7 +98,6 @@ and enum_def = {
 
 and stmt =
   | Expr of expr
-  | Return of expr option
   | VarDecl of mutable_flag * string * data_type option * expr
   | If of expr * stmt list * stmt list
   | For of string * expr * stmt list
@@ -175,7 +174,9 @@ and expr =
   | TupleExpr of expr list
   | TupleIndexExpr of expr * int
   | MethodCall of expr * string * expr list
+  | Return of expr option
   | FieldAccess of expr * string
+  | PathExpr of simple_path
 
 and array_expr =
   | ArrayLit of expr list
