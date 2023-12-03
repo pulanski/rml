@@ -7,6 +7,7 @@
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE SEMICOLON EQ COMMA COLON RARROW PATH_SEP BANG HASH CARET AMP PIPE
 %token U32 F32
 %token RETURN FN LET IF ELSE MUT FOR WHILE BREAK CONTINUE IN MATCH CASE TRUE FALSE VOID BOOL LOOP STRUCT ENUM TYPE TRAIT CONST IMPL USE AS PUB SELF SUPER MOD DO
+%token DOT DOTDOT DOTDOTEQ
 %token <string> IDENT
 %token EOF
 
@@ -185,6 +186,15 @@ expr:
 | expr RANGLE expr { BinOp (Gt, $1, $3) }
 | LBRACKET tensor_list RBRACKET { Tensor ($2) }
 | IDENT LBRACE field_init_list RBRACE { StructInit ($1, $3) }
+| range_expr { RangeExpr($1) }
+
+range_expr:
+| expr DOTDOT expr { Range($1, $3) }                  (* start..end *)
+  | expr DOTDOT { RangeFrom($1) }                       (* start.. *)
+  | DOTDOT expr { RangeTo($2) }                         (* ..end *)
+  | DOTDOT { RangeFull }                                (* .. *)
+  | expr DOTDOTEQ expr { RangeInclusive($1, $3) }       (* start..=end *)
+  | DOTDOTEQ expr { RangeToInclusive($2) }              (* ..=end *)
 
 field_init_list:
   | field_init COMMA field_init_list { $1 :: $3 }

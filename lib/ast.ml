@@ -126,6 +126,16 @@ and expr =
   | Tensor of expr list
   | Lambda of lambda  (* Lambda expression for anonymous functions *)
   | Literal of data_type
+  (* | Tuple of expr list *)
+  | RangeExpr of range_expr
+
+and range_expr =
+  | Range of expr * expr
+  | RangeFrom of expr
+  | RangeTo of expr
+  | RangeFull
+  | RangeInclusive of expr * expr
+  | RangeToInclusive of expr
 
 and lambda = {
   lparams: (string * ty) list;  (* Parameters with types *)
