@@ -23,7 +23,7 @@ and ir_of_item (item: item) : ir_item =
 
 and ir_of_trait (_trait_def: trait_def) : ir_item =
   failwith "TraitItem: Not yet implemented"
-  (* Possible implementation: List of function signatures *)
+  (* TODO: Possible implementation: List of function signatures *)
 
 and ir_of_module (_module_def: module_def) : ir_item =
   let module_name = _module_def.module_name in
