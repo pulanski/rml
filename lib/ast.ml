@@ -107,6 +107,8 @@ and stmt =
   | Loop of stmt list
   | Break
   | Continue
+  | ItemDecl of item
+  | Empty
 
 and ty =
   | VoidTy
