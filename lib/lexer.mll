@@ -10,6 +10,16 @@ rule token = parse
   | "::"                  { PATH_SEP }
   | '+'                   { PLUS }
   | '-'                   { MINUS }
+  | "+="                  { PLUSEQ }
+  | "-="                  { MINUSEQ }
+  | "*="                  { STAREQ }
+  | "/="                  { DIVEQ }
+  | "%="                  { MODEQ }
+  | "&="                  { ANDEQ }
+  | "|="                  { OREQ }
+  | "^="                  { XOREQ }
+  | "<<="                 { SHLEQ }
+  | ">>="                 { SHREQ }
   | '.'                   { DOT }
   | ".."                  { DOTDOT }
   | "..="                 { DOTDOTEQ }
@@ -19,11 +29,18 @@ rule token = parse
   | '^'                   { CARET }
   | '!'                   { BANG }
   | '&'                   { AMP }
+  | "&&"                  { AMPAMP }
   | '|'                   { PIPE }
+  | "||"                  { PIPEPIPE }
+  | '?'                   { QUESTION }
+  | "=="                  { EQEQ }
+  | "!="                  { NOT_EQ }
   | '*'                   { STAR }
   | '/'                   { DIV }
   | '<'                   { LANGLE }
   | '>'                   { RANGLE }
+  | "<="                  { LTEQ }
+  | ">="                  { GTEQ }
   | '('                   { LPAREN }
   | ')'                   { RPAREN }
   | '['                   { LBRACKET }

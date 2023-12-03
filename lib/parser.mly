@@ -3,10 +3,11 @@
 %}
 
 %token PLUS MINUS STAR DIV LANGLE RANGLE
-%token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE SEMICOLON EQ COMMA COLON RARROW PATH_SEP BANG HASH CARET AMP PIPE SHL SHR
+%token PLUSEQ MINUSEQ STAREQ DIVEQ MODEQ ANDEQ OREQ XOREQ SHLEQ SHREQ
+%token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE SEMICOLON EQ COMMA COLON RARROW PATH_SEP BANG HASH CARET AMP PIPE SHL SHR PIPEPIPE AMPAMP
 %token U32 F32
 %token RETURN FN LET IF ELSE MUT FOR WHILE BREAK CONTINUE IN MATCH CASE TRUE FALSE VOID BOOL LOOP STRUCT ENUM TYPE TRAIT CONST IMPL USE AS PUB SELF SUPER MOD DO
-%token DOT DOTDOT DOTDOTEQ
+%token DOT DOTDOT DOTDOTEQ QUESTION EQEQ NOT_EQ LTEQ GTEQ
 %token <string> IDENT
 %token <string> STRING_LITERAL
 %token <string> RAW_STRING_LITERAL
@@ -193,7 +194,6 @@ shape:
 
 expr:
 | literal_expr { Literal ($1) }
-| arith_or_logical_binary_expr { $1 }
 | range_expr { RangeExpr ($1) }
 | array_expr { ArrayExpr ($1) }
 | index_expr { $1 }
@@ -203,6 +203,54 @@ expr:
 // | expr DOT IDENT { FieldAccess ($1, $3) }
 | LBRACKET tensor_list RBRACKET { Tensor ($2) }
 | IDENT LBRACE field_init_list RBRACE { StructInit ($1, $3) }
+// TODO: refactor the below into a single operator_expr rule
+| borrow_expr { $1 }
+| deref_expr { $1 }
+| error_propagation_expr { $1 }
+| negation_expr { $1 }
+| arith_or_logical_binary_expr { $1 }
+| comparison_expr { $1 }
+| lazy_bool_expr { $1 }
+// | type_cast_expr { $1 } TODO: support type casts
+| compound_assign_expr { $1 }
+
+compound_assign_expr:
+| expr PLUSEQ expr { CompoundAssign (Add, $1, $3) }
+| expr MINUSEQ expr { CompoundAssign (Sub, $1, $3) }
+| expr STAREQ expr { CompoundAssign (Mul, $1, $3) }
+| expr DIVEQ expr { CompoundAssign (Div, $1, $3) }
+| expr MODEQ expr { CompoundAssign (Mod, $1, $3) }
+| expr ANDEQ expr { CompoundAssign (And, $1, $3) }
+| expr OREQ expr { CompoundAssign (Or, $1, $3) }
+| expr XOREQ expr { CompoundAssign (Xor, $1, $3) }
+| expr SHLEQ expr { CompoundAssign (Shl, $1, $3) }
+| expr SHREQ expr { CompoundAssign (Shr, $1, $3) }
+
+lazy_bool_expr:
+| expr PIPEPIPE expr { BinOp (Or, $1, $3) }
+| expr AMPAMP expr { BinOp (And, $1, $3) }
+
+comparison_expr:
+| expr EQEQ expr { BinOp (Eq, $1, $3) }
+| expr NOT_EQ expr { BinOp (Neq, $1, $3) }
+| expr LANGLE expr { BinOp (Lt, $1, $3) }
+| expr RANGLE expr { BinOp (Gt, $1, $3) }
+| expr LTEQ expr { BinOp (Leq, $1, $3) }
+| expr GTEQ expr { BinOp (Geq, $1, $3) }
+
+error_propagation_expr:
+| expr QUESTION { ErrorProp ($1) }
+
+deref_expr:
+| STAR expr { Deref ($2) }
+
+negation_expr:
+| MINUS expr %prec UMINUS { Negation ($2) }
+| BANG expr { Not ($2) }
+
+borrow_expr:
+| AMP expr { Borrow ($2) }
+| AMP MUT expr { BorrowMut ($3) }
 
 array_expr:
   | LBRACKET expr_list RBRACKET { ArrayLit($2) }

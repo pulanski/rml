@@ -152,6 +152,13 @@ and expr =
   | RangeExpr of range_expr
   | ArrayExpr of array_expr
   | IndexExpr of expr * expr
+  | Negation of expr
+  | Not of expr
+  | Borrow of expr
+  | BorrowMut of expr
+  | Deref of expr
+  | ErrorProp of expr
+  | CompoundAssign of binop * expr * expr
 
 and array_expr =
   | ArrayLit of expr list
