@@ -8,6 +8,26 @@ let rec calculate_shape (elements: expr list) : ir_shape =
   | Tensor elems :: _ -> List.length elements :: calculate_shape elems
   | _ -> [List.length elements]
 
+let data_type_to_literal = function
+  | I8 x -> LitInteger x
+  | I16 x -> LitInteger x
+  | I32 x -> LitInteger x
+  | I64 x -> LitInteger x
+  | U8 x -> LitInteger x
+  | U16 x -> LitInteger x
+  | U32 x -> LitInteger x
+  | U64 x -> LitInteger x
+  | F32 x -> LitFloat x
+  | F64 x -> LitFloat x
+  | Char x -> LitChar x
+  | String x -> LitString x
+  | Bool x -> LitBool x
+  | TTensor _ -> failwith "TTensor not supported as literal"
+  | Array _ -> failwith "Array not supported as literal"
+  | Custom _ -> failwith "Custom not supported as literal"
+  | Function _ -> failwith "Function not supported as literal"
+
+
 let rec generate_ir (program: program) : ir_program =
   ir_of_program program
 and ir_of_program (program: program) : ir_program =
@@ -34,7 +54,6 @@ and ir_of_trait (trait_def: trait_def) : ir_item =
       | _ -> failwith "Non-function items in trait not supported yet"
     ) trait_def.items
   }
-
 
 
 and ir_of_module (_module_def: module_def) : ir_item =
@@ -81,7 +100,7 @@ and ir_of_stmt (statement: stmt) : ir_stmt =
   match statement with
   | Expr expr -> IRExpr (ir_of_expr expr)
   | Return (Some expr) -> IRReturn (ir_of_expr expr)
-  | Return None -> IRReturn (IRU8 0)
+  | Return None -> IRReturn (IRLiteral (IRInt 0))
   | VarDecl (_, name, _, expr) -> IRVarDecl (name, ir_of_expr expr)
   | If (cond, then_stmts, else_stmts) -> IRIf (ir_of_expr cond, List.map ir_of_stmt then_stmts, List.map ir_of_stmt else_stmts)
   | For (name, expr, body) -> IRFor (name, ir_of_expr expr, List.map ir_of_stmt body)
@@ -97,7 +116,7 @@ and ir_of_case (case: case) : ir_match_case =
 
 and ir_of_pattern (pattern: pattern) : ir_pattern =
   match pattern with
-  | LiteralPattern lit -> IRLiteralPattern (ir_of_expr (Literal lit))
+  | LiteralPattern lit -> IRLiteralPattern (ir_of_expr (Literal (data_type_to_literal lit)))
   | VariablePattern name -> IRVariablePattern name
   | TuplePattern pats -> IRTuplePattern (List.map ir_of_pattern pats)
   | CustomPattern (name, pats) -> IRCustomPattern (name, List.map ir_of_pattern pats)
@@ -109,22 +128,18 @@ and ir_of_expr (expression: expr) : ir_expr =
   | BinOp (binop, left, right) -> IRBinOp (ir_of_binop binop, ir_of_expr left, ir_of_expr right)
   | Tensor elements -> IRTensor (calculate_shape elements, List.map ir_of_expr elements)
   | Literal x -> (match x with
-    | U8 x -> IRU8 x
-    | U16 x -> IRU16 x
-    | U32 x -> IRU32 x
-    | U64 x -> IRU64 x
-    | I8 x -> IRI8 x
-    | I16 x -> IRI16 x
-    | I32 x -> IRI32 x
-    | I64 x -> IRI64 x
-    | F32 x -> IRF32 x
-    | F64 x -> IRF64 x
-    | Char x -> IRChar x
-    | String x -> IRString x
-    | Bool x -> IRBool x
+    | LitChar x -> IRLiteral (IRChar x)
+    | LitInteger x -> IRLiteral (IRInt x)
+    | LitFloat x -> IRLiteral (IRFloat x)
+    | LitString x -> IRLiteral (IRString x)
+    | LitBool x -> IRLiteral (IRBool x)
+    | LitRawString x -> IRLiteral (IRString x)
+    | LitRawByteString x -> IRLiteral (IRString x)
+    | LitByteString x -> IRLiteral (IRString x)
+    | LitByte x -> IRLiteral (IRInt (int_of_char x))
     (* | Array x -> IRArray x
     | Custom x -> IRCustom x *)
-    | _ -> failwith "Literal: Not implemented")
+    )
   | _ -> failwith "Expr: Not implemented"
 
 and ir_of_binop (binop: binop) : ir_binop =
@@ -143,3 +158,6 @@ and ir_of_binop (binop: binop) : ir_binop =
   | Geq -> IRGeq
   | And -> IRAnd
   | Or -> IROr
+  | Shl -> IRShl
+  | Shr -> IRShr
+  | Xor -> IRXor

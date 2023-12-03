@@ -89,24 +89,21 @@ and type_of_lambda _env { lparams = _; lbody = _ } =
   type_of_expr env' lbody *)
 
 and type_of_literal = function
-  | I8 _ -> IntTy
-  | I16 _ -> IntTy
-  | I32 _ -> IntTy
-  | I64 _ -> IntTy
-  | U8 _ -> IntTy
-  | U16 _ -> IntTy
-  | U32 _ -> IntTy
-  | U64 _ -> IntTy
-  | F32 _ -> FloatTy
-  | F64 _ -> FloatTy
-  | Char _ -> CharTy
-  | String _ -> StringTy
-  | Bool _ -> BoolTy
-  | TTensor _ -> TensorTy
-  | _ -> failwith "Type not implemented"
-  (* | Array _ -> ArrayTy
-  | Function _ -> FuncTy *)
-  (* ... *)
+  | LitChar _ -> CharTy
+  | LitString _ -> StringTy
+  | LitRawString _ -> StringTy
+  | LitByte _ -> IntTy
+  | LitRawByteString _ -> StringTy
+  | LitByteString _ -> StringTy
+  | LitInteger _ -> IntTy
+  | LitFloat _ -> FloatTy
+  | LitBool _ -> BoolTy
+  (* TODO: *)
+  (*
+  | LitTensor _ -> TensorTy
+  | LitArray _ -> ArrayTy
+  | LitFunction _ -> FuncTy ([], VoidTy)
+  *)
 
 let rec analyze_program env = function
   | [] -> ()

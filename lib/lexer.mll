@@ -13,6 +13,8 @@ rule token = parse
   | '.'                   { DOT }
   | ".."                  { DOTDOT }
   | "..="                 { DOTDOTEQ }
+  | "<<"                  { SHL }
+  | ">>"                  { SHR }
   | '#'                   { HASH }
   | '^'                   { CARET }
   | '!'                   { BANG }
@@ -65,8 +67,20 @@ rule token = parse
   | "f32"                 { F32 }
   | "mod"                 { MOD }
   | "let"                 { LET }
-  | ['0'-'9']+ as lxm     { NUMBER(float_of_string lxm) }
-  | ['0'-'9']+ '.' ['0'-'9']* as lxm { NUMBER(float_of_string lxm) }
+  (* /* Number literals */ *)
+  | ['0'-'9']+ as lxm { INTEGER_LITERAL(lxm) }
+  (* | ['0'-'9']+ '.' ['0'-'9']* as lxm { FLOAT_LITERAL(float_of_string lxm) } *)
+  | ['0'-'9']+ '.' ['0'-'9']* as lxm { FLOAT_LITERAL(lxm) }
+  (* /* Character and String literals */ *)
+  | '\'' ( [^'\\'] | '\\' _ ) '\'' { CHAR_LITERAL(Lexing.lexeme lexbuf) }
+  | '\"' ( [^'\\' '\n'] | '\\' _ )* '\"' { STRING_LITERAL(Lexing.lexeme lexbuf) }
+  (* /* Raw String literals */ *)
+  | "r\"" [^'\"']* "\"r" { RAW_STRING_LITERAL(Lexing.lexeme lexbuf) }
+  (* /* Byte and Byte String literals */ *)
+  | "b'" ( [^'\\'] | '\\' _ ) "'" { BYTE_LITERAL(Lexing.lexeme lexbuf) }
+  | "b\"" ( [^'\\'] | '\\' _ )* "\"" { BYTE_STRING_LITERAL(Lexing.lexeme lexbuf) }
+  (* /* Raw Byte String literals */ *)
+  | "br\"" [^'\"']* "\"br" { RAW_BYTE_STRING_LITERAL(Lexing.lexeme lexbuf) }
   | ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { IDENT(lxm) }
   | eof                   { EOF }
   | _ as char {

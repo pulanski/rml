@@ -75,23 +75,20 @@ and ir_pattern =
   | IRCustomPattern of string * ir_pattern list    (* For matching user-defined types *)
 
 and ir_expr =
-  | IRU8 of int
-  | IRU16 of int
-  | IRU32 of int
-  | IRU64 of int
-  | IRI8 of int
-  | IRI16 of int
-  | IRI32 of int
-  | IRI64 of int
-  | IRF32 of float
-  | IRF64 of float
-  | IRChar of char
-  | IRString of string
-  | IRBool of bool
+  | IRLiteral of ir_literal
   | IRVariable of string
   | IRCall of string * ir_expr list
   | IRBinOp of ir_binop * ir_expr * ir_expr
   | IRTensor of ir_shape * ir_expr list
+
+and ir_literal =
+  | IRInt of int
+  | IRFloat of float
+  | IRBool of bool
+  | IRChar of char
+  | IRString of string
+  | IRNull (* TODO: do we need/want this? *)
+  | IRVoid
 
 and ir_binop =
   | IRAdd
@@ -113,7 +110,6 @@ and ir_binop =
   | IRNeq
   | IRLeq
   | IRGeq
-
 
 and ir_shape = int list
 

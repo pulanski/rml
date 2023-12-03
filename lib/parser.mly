@@ -2,13 +2,20 @@
   open Ast
 %}
 
-%token <float> NUMBER
 %token PLUS MINUS MULT DIV LANGLE RANGLE
-%token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE SEMICOLON EQ COMMA COLON RARROW PATH_SEP BANG HASH CARET AMP PIPE
+%token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE SEMICOLON EQ COMMA COLON RARROW PATH_SEP BANG HASH CARET AMP PIPE SHL SHR
 %token U32 F32
 %token RETURN FN LET IF ELSE MUT FOR WHILE BREAK CONTINUE IN MATCH CASE TRUE FALSE VOID BOOL LOOP STRUCT ENUM TYPE TRAIT CONST IMPL USE AS PUB SELF SUPER MOD DO
 %token DOT DOTDOT DOTDOTEQ
 %token <string> IDENT
+%token <string> STRING_LITERAL
+%token <string> RAW_STRING_LITERAL
+%token <string> BYTE_LITERAL
+%token <string> BYTE_STRING_LITERAL
+%token <string> RAW_BYTE_STRING_LITERAL
+%token <string> CHAR_LITERAL
+%token <string> INTEGER_LITERAL
+%token <string> FLOAT_LITERAL
 %token EOF
 
 %left PLUS MINUS        /* lowest precedence */
@@ -157,7 +164,6 @@ match_case:
 
 pattern:
 | IDENT { VariablePattern $1 }
-| NUMBER { LiteralPattern (F32 $1) }
 (* Other patterns *)
 
 opt_tensor_type:
@@ -168,25 +174,45 @@ tensor_type:
 | LANGLE shape RANGLE { { shape = $2 } }
 
 shape:
-| NUMBER { [int_of_float $1] }
-| NUMBER COMMA shape { (int_of_float $1) :: $3 }
+| INTEGER_LITERAL { [(int_of_string $1)] }
+| INTEGER_LITERAL COMMA shape { (int_of_string $1) :: $3 }
 
 expr:
-| NUMBER { Literal (F32 $1) }
+| literal_expr { Literal ($1) }
+| arith_or_logical_binary_expr { $1 }
+| range_expr { RangeExpr ($1) }
 | IDENT { Variable $1 }
-| TRUE { Literal (Bool true) }
-| FALSE { Literal (Bool false) }
 | IDENT LPAREN expr_list RPAREN { Call ($1, $3) }
 | LPAREN expr RPAREN { $2 }
-| expr PLUS expr { BinOp (Add, $1, $3) }
-| expr MINUS expr { BinOp (Sub, $1, $3) }
-| expr MULT expr { BinOp (Mul, $1, $3) }
-| expr DIV expr { BinOp (Div, $1, $3) }
-| expr LANGLE expr { BinOp (Lt, $1, $3) }
-| expr RANGLE expr { BinOp (Gt, $1, $3) }
+// | expr DOT IDENT { FieldAccess ($1, $3) }
 | LBRACKET tensor_list RBRACKET { Tensor ($2) }
 | IDENT LBRACE field_init_list RBRACE { StructInit ($1, $3) }
-| range_expr { RangeExpr($1) }
+
+literal_expr:
+  | TRUE { LitBool true }
+  | FALSE { LitBool false }
+  | CHAR_LITERAL { LitChar (String.get $1 0) }
+  | STRING_LITERAL { LitString $1 }
+  | RAW_STRING_LITERAL { LitRawString $1 }
+  | BYTE_STRING_LITERAL { LitByteString $1 }
+  | RAW_BYTE_STRING_LITERAL { LitRawByteString $1 }
+  | BYTE_LITERAL { LitByte (String.get $1 0) }
+  | INTEGER_LITERAL { LitInteger (int_of_string $1) }
+  | FLOAT_LITERAL { LitFloat (float_of_string $1) }
+
+arith_or_logical_binary_expr:
+  | expr PLUS expr { BinOp (Add, $1, $3) }
+  | expr MINUS expr { BinOp (Sub, $1, $3) }
+  | expr MULT expr { BinOp (Mul, $1, $3) }
+  | expr DIV expr { BinOp (Div, $1, $3) }
+  | expr MOD expr { BinOp (Mod, $1, $3) }
+  | expr LANGLE expr { BinOp (Lt, $1, $3) }
+  | expr RANGLE expr { BinOp (Gt, $1, $3) }
+  | expr AMP expr { BinOp (And, $1, $3) }
+  | expr PIPE expr { BinOp (Or, $1, $3) }
+  | expr CARET expr { BinOp (Xor, $1, $3) }
+  | expr SHL expr { BinOp (Shl, $1, $3) }
+  | expr SHR expr { BinOp (Shr, $1, $3) }
 
 range_expr:
 | expr DOTDOT expr { Range($1, $3) }                  (* start..end *)
@@ -222,7 +248,7 @@ expr_list:
 
 tensor_literal:
 | opt_literal_list { $1 }
-| NUMBER { [$1] }
+| INTEGER_LITERAL { [$1] }
 
 opt_literal_list:
 | (* empty *) { [] }

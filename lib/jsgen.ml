@@ -2,19 +2,9 @@ open Ir
 
 let rec emit_js_expr = function
   (* Translate IR expressions to JavaScript expressions *)
-  | IRU8 i -> string_of_int i
-  | IRU16 i -> string_of_int i
-  | IRU32 i -> string_of_int i
-  | IRU64 i -> string_of_int i
-  | IRI8 i -> string_of_int i
-  | IRI16 i -> string_of_int i
-  | IRI32 i -> string_of_int i
-  | IRI64 i -> string_of_int i
-  | IRF32 f -> string_of_float f
-  | IRF64 f -> string_of_float f
-  | IRChar c -> Printf.sprintf "'%c'" c
-  | IRString s -> Printf.sprintf "\"%s\"" s
-  | IRBool b -> string_of_bool b
+    (* | IRArray elems ->
+      let elems_str = String.concat ", " (List.map emit_js_expr elems) in
+      Printf.sprintf "[%s]" elems_str *)
   | IRVariable v -> v
   | IRCall (name, args) ->
     let args_str = String.concat ", " (List.map emit_js_expr args) in
@@ -25,6 +15,15 @@ let rec emit_js_expr = function
   | IRTensor (_shape, elems) ->
     let elems_str = String.concat ", " (List.map emit_js_expr elems) in
     Printf.sprintf "[%s]" elems_str
+  | IRLiteral lit ->
+    match lit with
+    | IRInt i -> string_of_int i
+    | IRFloat f -> string_of_float f
+    | IRBool b -> string_of_bool b
+    | IRString s -> "\"" ^ s ^ "\""
+    | IRChar c -> "'" ^ Char.escaped c ^ "'"
+    | IRNull -> "null"
+    | IRVoid -> "undefined"
   (* TODO: Add support for the following *)
   (* | IRIndex (e, i) -> Printf.sprintf "%s[%s]" (emit_js_expr e) (emit_js_expr i) *)
   (* | IRIndexSlice (e, i1, i2) -> Printf.sprintf "%s[%s:%s]" (emit_js_expr e) (emit_js_expr i1) (emit_js_expr i2) *)
