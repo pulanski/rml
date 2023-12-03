@@ -8,6 +8,17 @@ enum Bar {
     B,
 }
 
+mod baz {
+    fn foo() -> u32 {
+        return 42;
+    }
+}
+
+fn add(a: u32, b: u32) -> u32 {
+    // a + b // TODO: add support for returning expressions
+    return a + b;
+}
+
 fn main() -> u32 {
     let e = 42;
     return e;

@@ -45,6 +45,7 @@ rule token = parse
   | "super"               { SUPER }
   | "trait"               { TRAIT }
   | "while"               { WHILE }
+  | "do"                  { DO }
   | "for"                 { FOR }
   | "loop"                { LOOP }
   | "in"                  { IN }
@@ -59,7 +60,7 @@ rule token = parse
   | "mut"                 { MUT }
   | "u32"                 { U32 }
   | "f32"                 { F32 }
-  | "var"                 { VAR }
+  | "mod"                 { MOD }
   | "let"                 { LET }
   | ['0'-'9']+ as lxm     { NUMBER(float_of_string lxm) }
   | ['0'-'9']+ '.' ['0'-'9']* as lxm { NUMBER(float_of_string lxm) }

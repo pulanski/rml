@@ -18,7 +18,20 @@ and ir_of_item (item: item) : ir_item =
   | FunctionItem func -> IRFunc (ir_of_func func)
   | StructItem struct_def -> ir_of_struct struct_def
   | EnumItem enum_def -> ir_of_enum enum_def
-  | TraitItem _trait_def -> failwith "Not implemented"
+  | TraitItem trait_def -> ir_of_trait trait_def
+  | ModuleItem module_def -> ir_of_module module_def
+
+and ir_of_trait (_trait_def: trait_def) : ir_item =
+  failwith "TraitItem: Not yet implemented"
+  (* Possible implementation: List of function signatures *)
+
+and ir_of_module (_module_def: module_def) : ir_item =
+  let module_name = _module_def.module_name in
+  let module_items = _module_def.module_items in
+  IRModuleDef {
+    ir_module_name = module_name;
+    ir_module_items = List.map ir_of_item module_items
+  }
 
 and ir_of_struct (struct_def: struct_def) : ir_item =
   IRStructDef {
@@ -65,7 +78,7 @@ and ir_of_stmt (statement: stmt) : ir_stmt =
   | While (cond, body) -> IRWhile (ir_of_expr cond, List.map ir_of_stmt body)
   | Loop (body) -> IRLoop (List.map ir_of_stmt body)
   (* | Match (expr, cases) -> IRMatch (ir_of_expr expr, List.map ir_of_case cases) *)
-  | _ -> failwith "Not implemented"
+  | _ -> failwith "IRStmt: Not implemented"
 
 and ir_of_expr (expression: expr) : ir_expr =
   match expression with
@@ -89,8 +102,8 @@ and ir_of_expr (expression: expr) : ir_expr =
     | Bool x -> IRBool x
     (* | Array x -> IRArray x
     | Custom x -> IRCustom x *)
-    | _ -> failwith "Not implemented")
-  | _ -> failwith "Not implemented"
+    | _ -> failwith "Literal: Not implemented")
+  | _ -> failwith "Expr: Not implemented"
 
 and ir_of_binop (binop: binop) : ir_binop =
   match binop with

@@ -4,7 +4,27 @@ and ir_item =
   | IRFunc of ir_func
   | IRStructDef of ir_struct_def
   | IREnumDef of ir_enum_def
+  | IRTraitDef of ir_trait_def
+  | IRModuleDef of ir_module_def
   (* Add other item types as necessary *)
+
+and ir_function_signature = {
+  func_sig_name: string;
+  func_sig_params: ir_type list;
+  func_sig_return_type: ir_type;
+}
+
+and ir_trait_def = {
+  ir_trait_name: string;
+  ir_methods: ir_function_signature list;
+  (* Other trait details *)
+}
+
+and ir_module_def = {
+  ir_module_name: string;
+  ir_module_items: ir_item list;
+  (* Other module details *)
+}
 
 and ir_struct_def = {
   ir_struct_name: string;

@@ -6,6 +6,7 @@ type environment = {
   vars: ty StringMap.t;
   structs: struct_def StringMap.t;
   enums: enum_def StringMap.t;
+  traits: trait_def StringMap.t;
 }
 
 let data_type_to_ty = function
@@ -61,7 +62,6 @@ and type_of_call env f arg_types =
           failwith "Type mismatch in function call arguments") param_types arg_types;
       return_type
   | _ -> failwith (f ^ " is not a function")
-
 
 and type_of_binop env op lhs rhs =
   let lhs_type = type_of_expr env lhs in
@@ -120,8 +120,24 @@ let rec analyze_program env = function
       | EnumItem enum_def ->
           let env = analyze_enum_def env enum_def
           in analyze_program env rest
-      | _ -> failwith "Not implemented"
+      | TraitItem trait_def ->
+          let env = analyze_trait_def env trait_def in analyze_program env rest
+      | ModuleItem module_def ->
+          let env = analyze_module_def env module_def in analyze_program env rest
       )
+
+and analyze_trait_def env trait_def =
+  if StringMap.mem trait_def.trait_name env.traits then
+    failwith ("Duplicate trait definition: " ^ trait_def.trait_name);
+  (* Analyze each trait item *)
+  let env = { env with traits = StringMap.add trait_def.trait_name trait_def env.traits } in
+  env
+
+and analyze_module_def env module_def =
+  let module_env = { env with vars = StringMap.empty; structs = StringMap.empty; enums = StringMap.empty } in
+  let _ = analyze_program module_env module_def.module_items in
+  (* Optionally, update the parent environment with exports from the module *)
+  env
 
 and analyze_struct_def env struct_def =
   if StringMap.mem struct_def.struct_name env.structs then
@@ -130,7 +146,6 @@ and analyze_struct_def env struct_def =
   let env = { env with structs = StringMap.add struct_def.struct_name struct_def env.structs } in
   env
 
-
 and analyze_enum_def env enum_def =
   if StringMap.mem enum_def.enum_name env.enums then
     failwith ("Duplicate enum definition: " ^ enum_def.enum_name);
@@ -138,21 +153,21 @@ and analyze_enum_def env enum_def =
   let env = { env with enums = StringMap.add enum_def.enum_name enum_def env.enums } in
   env
 
-and analyze_struct_init env struct_name _field_inits =
-  let _struct_def =
+and analyze_struct_init env struct_name field_inits =
+  let struct_def =
     try StringMap.find struct_name env.structs
     with Not_found -> failwith ("Undefined struct: " ^ struct_name)
   in
-  failwith ("Struct initialization not implemented")
-  (* List.iter (fun (field_name, init_expr) ->
+  List.iter (fun (field_name, init_expr) ->
     let field_type =
       try List.assoc field_name struct_def.fields
       with Not_found -> failwith ("Undefined field: " ^ field_name)
     in
-    let init_type = type_of_expr env.vars init_expr in
+    let init_type = type_of_expr env init_expr in
     if field_type <> init_type then
       failwith ("Type mismatch in field initialization for " ^ field_name)
-  ) field_inits *)
+  ) field_inits;
+  env
 
 and analyze_enum_init env enum_name variant value_opt =
   let enum_def =
@@ -242,5 +257,6 @@ let type_check_program program =
     vars = StringMap.empty;
     structs = StringMap.empty;
     enums = StringMap.empty;
+    traits = StringMap.empty;
   } in
   analyze_program env program

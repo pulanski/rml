@@ -121,6 +121,9 @@ and emit_c_item = function
   | IRFunc func -> emit_c_function func
   | IRStructDef struct_def -> emit_c_struct struct_def
   | IREnumDef enum_def -> emit_c_enum enum_def
+  | IRTraitDef _trait_def -> "TODO: impl me"
+  (* | IRImplDef impl_def -> "TODO: impl me" *)
+  | IRModuleDef _module_def -> "TODO: impl me"
   (* Add other item types as necessary *)
 
 and emit_c_struct struct_def =

@@ -5,6 +5,13 @@ and item =
   | StructItem of struct_def
   | EnumItem of enum_def
   | TraitItem of trait_def
+  | ModuleItem of module_def
+
+and module_def = {
+  module_name: string;
+  module_items: item list;
+  module_attributes: attribute list;
+}
 
 and trait_def = {
   trait_name: string;
