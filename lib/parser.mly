@@ -29,36 +29,93 @@
 
 %%
 
-program:
-  | item_list EOF { $1 }
+/* Main Program Structure */
+program: item_list EOF { $1 }
 
 item_list:
   | item item_list { $1 :: $2 }
-  |  { [] }
-
-item:
-  | attributes func { FunctionItem { $2 with func_attributes = $1 } }
-  | attributes struct_def { StructItem { $2 with struct_attributes = $1 } }
-  | attributes enum_def { EnumItem { $2 with enum_attributes = $1 } }
-  | attributes trait_def { TraitItem { $2 with trait_attributes = $1 } }
-  // | attributes impl_def { ImplItem { $2 with impl_attributes = $1 } }
-  | attributes module_def { ModuleItem { $2 with module_attributes = $1 } }
-  | attributes use_decl { UseItem $2 }
-  | attributes type_alias { TypeAliasItem $2 }
-
-module_def:
-  | MOD IDENT LBRACE item_list RBRACE {
-      { module_name = $2; module_items = $4; module_attributes = [] }
-  }
-
-trait_def:
-  | TRAIT IDENT LBRACE trait_items RBRACE { { trait_name = $2; items = $4; trait_attributes = [] } }
-
-trait_items:
-  | trait_item trait_items { $1 :: $2 }
   | { [] }
 
+item:
+  | function_item { $1 }
+  | struct_item { $1 }
+  | enum_item { $1 }
+  | trait_item { $1 }
+  | module_item { $1 }
+  | use_decl { UseItem $1 }
+  | type_alias { TypeAliasItem $1 }
+
+/* Function Definitions */
+function_item:
+  | attributes func { FunctionItem { $2 with func_attributes = $1 } }
+
+func:
+| FN IDENT LPAREN params RPAREN RARROW return_type block {
+    { proto = { name = $2; params = $4; return_type = $7 }; body = $8; func_attributes = [] }
+}
+
+params:
+| param COMMA params { $1 :: $3 }
+| param { [$1] }
+|  { [] }
+
+param:
+| IDENT COLON ty { ($1, $3) }
+| IDENT { ($1, IntTy) }
+
+/* Struct Definitions */
+struct_item:
+  | attributes struct_def { StructItem { $2 with struct_attributes = $1 } }
+
+struct_def:
+  | STRUCT IDENT LBRACE field_defs RBRACE { { struct_name = $2; fields = $4; struct_attributes = [] } }
+
+field_defs:
+  | field_def COMMA field_defs { $1 :: $3 }
+  | field_def { [$1] }
+  |  { [] }
+
+field_def:
+  | IDENT COLON ty { ($1, $3) }
+
+ty:
+| U32 { IntTy }
+| F32 { FloatTy }
+| BOOL { BoolTy }
+// | tensor_type { TensorTy $1 }
+| tensor_type { TensorTy }
+| VOID { VoidTy }
+// TODO: support first-class functions
+// | FN LPAREN params RPAREN RARROW ty { FuncTy ($3, $6) }
+
+/* Enum Definitions */
+enum_item:
+  | attributes enum_def { EnumItem { $2 with enum_attributes = $1 } }
+
+enum_def:
+  | ENUM IDENT LBRACE variant_defs RBRACE { { enum_name = $2; variants = $4; enum_attributes = [] } }
+
+variant_defs:
+  | variant_def COMMA variant_defs { $1 :: $3 }
+  | variant_def { [$1] }
+  |  { [] }
+
+variant_def:
+  | IDENT { ($1, None) }
+  // | IDENT OF ty { ($1, Some $3) } // TODO: figure out what we want syntax to be here
+
+/* Trait Definitions */
 trait_item:
+  | attributes trait_def { TraitItem { $2 with trait_attributes = $1 } }
+
+trait_def:
+  | TRAIT IDENT LBRACE associated_items RBRACE { { trait_name = $2; items = $4; trait_attributes = [] } }
+
+associated_items:
+  | associated_item associated_items { $1 :: $2 }
+  | { [] }
+
+associated_item:
   | trait_func { TraitFunc $1 }
   | trait_type { TraitType $1 }
   | trait_const { TraitConst $1 }
@@ -78,59 +135,16 @@ trait_const:
   | CONST IDENT COLON ty SEMICOLON { { const_name = $2; const_type = $4; const_value = None } }
   | CONST IDENT COLON ty EQ expr SEMICOLON { { const_name = $2; const_type = $4; const_value = Some $6 } }
 
-func:
-| FN IDENT LPAREN params RPAREN RARROW return_type block {
-    { proto = { name = $2; params = $4; return_type = $7 }; body = $8; func_attributes = [] }
-}
+/* Module Definitions */
+module_item:
+  | attributes module_def { ModuleItem { $2 with module_attributes = $1 } }
 
-return_type:
-| VOID { VoidTy }
-| U32 { IntTy }
-| F32 { FloatTy }
-| BOOL { BoolTy }
+module_def:
+  | MOD IDENT LBRACE item_list RBRACE {
+      { module_name = $2; module_items = $4; module_attributes = [] }
+  }
 
-params:
-| param COMMA params { $1 :: $3 }
-| param { [$1] }
-|  { [] }
-
-param:
-| IDENT COLON ty { ($1, $3) }
-| IDENT { ($1, IntTy) }
-
-struct_def:
-  | STRUCT IDENT LBRACE field_defs RBRACE { { struct_name = $2; fields = $4; struct_attributes = [] } }
-
-field_defs:
-  | field_def COMMA field_defs { $1 :: $3 }
-  | field_def { [$1] }
-  |  { [] }
-
-field_def:
-  | IDENT COLON ty { ($1, $3) }
-
-enum_def:
-  | ENUM IDENT LBRACE variant_defs RBRACE { { enum_name = $2; variants = $4; enum_attributes = [] } }
-
-variant_defs:
-  | variant_def COMMA variant_defs { $1 :: $3 }
-  | variant_def { [$1] }
-  |  { [] }
-
-variant_def:
-  | IDENT { ($1, None) }
-  // | IDENT OF ty { ($1, Some $3) } // TODO: figure out what we want syntax to be here
-
-ty:
-| U32 { IntTy }
-| F32 { FloatTy }
-| BOOL { BoolTy }
-// | tensor_type { TensorTy $1 }
-| tensor_type { TensorTy }
-| VOID { VoidTy }
-// TODO: support first-class functions
-// | FN LPAREN params RPAREN RARROW ty { FuncTy ($3, $6) }
-
+/* Use Declarations */
 use_decl:
   | USE use_tree SEMICOLON { UseDecl $2 }
 
@@ -143,6 +157,25 @@ use_tree:
 use_tree_list:
   | use_tree COMMA use_tree_list { $1 :: $3 }
   | use_tree { [$1] }
+
+type_alias:
+| TYPE IDENT EQ ty SEMICOLON { TypeAlias ($2, $4) }
+
+// item:
+//   | attributes func { FunctionItem { $2 with func_attributes = $1 } }
+//   | attributes struct_def { StructItem { $2 with struct_attributes = $1 } }
+//   | attributes enum_def { EnumItem { $2 with enum_attributes = $1 } }
+//   | attributes trait_def { TraitItem { $2 with trait_attributes = $1 } }
+//   // | attributes impl_def { ImplItem { $2 with impl_attributes = $1 } }
+//   | attributes module_def { ModuleItem { $2 with module_attributes = $1 } }
+//   | attributes use_decl { UseItem $2 }
+//   | attributes type_alias { TypeAliasItem $2 }
+
+return_type:
+| VOID { VoidTy }
+| U32 { IntTy }
+| F32 { FloatTy }
+| BOOL { BoolTy }
 
 block:
 | LBRACE stmt_list RBRACE { $2 }
@@ -192,9 +225,6 @@ tensor_type:
 shape:
 | INTEGER_LITERAL { [(int_of_string $1)] }
 | INTEGER_LITERAL COMMA shape { (int_of_string $1) :: $3 }
-
-type_alias:
-| TYPE IDENT EQ ty SEMICOLON { TypeAlias ($2, $4) }
 
 // https://doc.rust-lang.org/stable/reference/expressions.html
 expr:
