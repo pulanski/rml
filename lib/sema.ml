@@ -210,7 +210,8 @@ and analyze_stmt env = function
       update_env env name expr_type
   | Expr expr ->
       ignore (type_of_expr env expr); env
-  | Return (Some expr) ->
+      (* TODO: Move to eval on exprs *)
+  (* | Return (Some expr) ->
       ignore (type_of_expr env expr); env
   | Return None -> env
     | If (cond, then_stmts, else_stmts) ->
@@ -218,7 +219,7 @@ and analyze_stmt env = function
       let _then_env = analyze_stmt_list env then_stmts in
       let _else_env = analyze_stmt_list env else_stmts in
       (* TODO: Decide how to merge then_env and else_env if necessary *)
-      env  (* or the merged environment *)
+      env  or the merged environment *)
   | While (cond, body) ->
       ignore (type_of_expr env cond);
       let _body_env = analyze_stmt_list env body in
