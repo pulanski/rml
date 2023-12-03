@@ -150,6 +150,13 @@ and expr =
   (* | Literal of data_type <- TODO: figure out how we want to do user-defined types *)
   (* | Tuple of expr list *)
   | RangeExpr of range_expr
+  | ArrayExpr of array_expr
+  | IndexExpr of expr * expr
+
+and array_expr =
+  | ArrayLit of expr list
+  | ArrayRepeat of expr * expr
+  | ArrayRange of range_expr
 
 and range_expr =
   | Range of expr * expr

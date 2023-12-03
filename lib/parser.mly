@@ -195,12 +195,21 @@ expr:
 | literal_expr { Literal ($1) }
 | arith_or_logical_binary_expr { $1 }
 | range_expr { RangeExpr ($1) }
+| array_expr { ArrayExpr ($1) }
+| index_expr { $1 }
 | IDENT { Variable $1 }
 | IDENT LPAREN expr_list RPAREN { Call ($1, $3) }
 | LPAREN expr RPAREN { $2 }
 // | expr DOT IDENT { FieldAccess ($1, $3) }
 | LBRACKET tensor_list RBRACKET { Tensor ($2) }
 | IDENT LBRACE field_init_list RBRACE { StructInit ($1, $3) }
+
+array_expr:
+  | LBRACKET expr_list RBRACKET { ArrayLit($2) }
+  | LBRACKET expr SEMICOLON expr RBRACKET { ArrayRepeat($2, $4) }
+
+index_expr:
+  | expr LBRACKET expr RBRACKET { IndexExpr($1, $3) }
 
 literal_expr:
   | TRUE { LitBool true }
