@@ -2,7 +2,7 @@
   open Ast
 %}
 
-%token PLUS MINUS MULT DIV LANGLE RANGLE
+%token PLUS MINUS STAR DIV LANGLE RANGLE
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE SEMICOLON EQ COMMA COLON RARROW PATH_SEP BANG HASH CARET AMP PIPE SHL SHR
 %token U32 F32
 %token RETURN FN LET IF ELSE MUT FOR WHILE BREAK CONTINUE IN MATCH CASE TRUE FALSE VOID BOOL LOOP STRUCT ENUM TYPE TRAIT CONST IMPL USE AS PUB SELF SUPER MOD DO
@@ -42,6 +42,7 @@ item:
   | attributes trait_def { TraitItem { $2 with trait_attributes = $1 } }
   // | attributes impl_def { ImplItem { $2 with impl_attributes = $1 } }
   | attributes module_def { ModuleItem { $2 with module_attributes = $1 } }
+  | attributes use_decl { UseItem $2 }
 
 module_def:
   | MOD IDENT LBRACE item_list RBRACE {
@@ -128,6 +129,19 @@ ty:
 // TODO: support first-class functions
 // | FN LPAREN params RPAREN RARROW ty { FuncTy ($3, $6) }
 
+use_decl:
+  | USE use_tree SEMICOLON { UseDecl $2 }
+
+use_tree:
+  | simple_path { SimplePathUseTree $1 }
+  | simple_path PATH_SEP LBRACE use_tree_list RBRACE { NestedUseTree ($1, $4) }
+  | simple_path PATH_SEP STAR { GlobUseTree $1 }
+  | simple_path AS IDENT { RenamedUseTree ($1, $3) }
+
+use_tree_list:
+  | use_tree COMMA use_tree_list { $1 :: $3 }
+  | use_tree { [$1] }
+
 block:
 | LBRACE stmt_list RBRACE { $2 }
 
@@ -203,7 +217,7 @@ literal_expr:
 arith_or_logical_binary_expr:
   | expr PLUS expr { BinOp (Add, $1, $3) }
   | expr MINUS expr { BinOp (Sub, $1, $3) }
-  | expr MULT expr { BinOp (Mul, $1, $3) }
+  | expr STAR expr { BinOp (Mul, $1, $3) }
   | expr DIV expr { BinOp (Div, $1, $3) }
   | expr MOD expr { BinOp (Mod, $1, $3) }
   | expr LANGLE expr { BinOp (Lt, $1, $3) }

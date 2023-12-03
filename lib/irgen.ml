@@ -40,6 +40,7 @@ and ir_of_item (item: item) : ir_item =
   | EnumItem enum_def -> ir_of_enum enum_def
   | TraitItem trait_def -> ir_of_trait trait_def
   | ModuleItem module_def -> ir_of_module module_def
+  | UseItem _ -> failwith "UseItem not supported yet"
 
 and ir_of_trait (trait_def: trait_def) : ir_item =
   IRTraitDef {
