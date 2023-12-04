@@ -55,7 +55,6 @@ and ir_func = {
 
 and ir_stmt =
   | IRExpr of ir_expr
-  | IRReturn of ir_expr
   | IRVarDecl of string * ir_expr
   | IRIf of ir_expr * ir_stmt list * ir_stmt list  (* if condition then block else block *)
   | IRFor of string * ir_expr * ir_stmt list       (* for variable in iterable do block *)
@@ -74,16 +73,33 @@ and ir_pattern =
   | IRTuplePattern of ir_pattern list
   | IRCustomPattern of string * ir_pattern list    (* For matching user-defined types *)
 
+and ir_segment =
+  | IRPathIdentSegment of ir_ident_segment
+  | IRPathExprSegment of ir_ident_segment * ir_generic_arg list
+
+and ir_ident_segment =
+  | IRIdent of string
+  | IRSelf
+  | IRSuper
+  | IRCrate
+
+and ir_generic_arg =
+  | IRTyArg of ir_type
+  | IRLitArg of ir_literal
+
 and ir_expr =
   | IRLiteral of ir_literal
+  | IRReturn of ir_expr
   | IRVariable of string
+  | IRNot of ir_expr
   | IRCall of string * ir_expr list
   | IRBinOp of ir_binop * ir_expr * ir_expr
   | IRTensor of ir_shape * ir_expr list
   | IRStructInit of string * (string * ir_expr) list
-  | IREnumInit of string * string * (string * ir_expr) list
+  | IREnumInit of string * string * ir_expr
   | IRLambda of ir_param list * ir_stmt list
   | IRRange of ir_expr * ir_expr
+  | IRPath of ir_segment list
 
 and ir_literal =
   | IRInt of int
@@ -125,7 +141,7 @@ and ir_type =
   | IRCharTy
   | IRStringTy
   | IRTensorTy
-  | IRFuncTy
+  | IRFuncTy of ir_type list * ir_type
   | IRTypeVar
   | IRArrayTy of ir_type
   | IRCustomTy of string

@@ -11,26 +11,17 @@ let parse_program input_file =
   let lexbuf = Lexing.from_channel channel in
   Parser.program Lexer.token lexbuf
 
-let print_failed_to_infer_output_type =
-  print_endline "";
-  print_endline "[WARNING] Failed to infer output type";
-  print_endline "";
-  print_endline "Specify output types with the --emit flag (e.g., --emit c,js,mlir)";
-  print_endline "Valid output types are: c, js, mlir";
-  print_endline "";
-  print_endline "Example:";
-  print_endline "  rml --emit c,js,mlir file1.rs";
-  print_endline "";
-  print_endline "This will generate C, JS, and MLIR code for file1.rs";
-  print_endline "";
-  print_endline "Note: If you specify an output file with the -o flag, the output type will be inferred from the file extension.";
-  print_endline "";
-  print_endline "      For example, if you specify -o file1.js, the output type will be JS.";
-  print_endline "";
-  print_endline "      If you specify -o file1.c, the output type will be C.";
-  print_endline "";
-  print_endline "      If you specify -o file1.mlir, the output type will be MLIR.";
-  print_endline ""
+let failed_to_infer_output_type_message () =
+  "\n[WARNING] Failed to infer output type\n\n" ^
+  "Specify output types with the --emit flag (e.g., --emit c,js,mlir)\n" ^
+  "Valid output types are: c, js, mlir\n\n" ^
+  "Example:\n  rml --emit c,js,mlir file1.rs\n\n" ^
+  "This will generate C, JS, and MLIR code for file1.rs\n\n" ^
+  "Note: If you specify an output file with the -o flag, the output type will be inferred from the file extension.\n\n" ^
+  "      For example, if you specify -o file1.js, the output type will be JS.\n" ^
+  "      If you specify -o file1.c, the output type will be C.\n" ^
+  "      If you specify -o file1.mlir, the output type will be MLIR.\n"
+
 
 let compile_to_target ir target base_output_file input_file =
   print_endline ("Compiling to target: " ^ target);
@@ -68,12 +59,17 @@ let compile_command input_files output_file emit_types _include_dirs _verbose =
       | None -> Filename.remove_extension input_file
     in
     let output_config = {
-      output_js = List.mem "js" emit_types;
-      output_c = List.mem "c" emit_types;
-      output_mlir = List.mem "mlir" emit_types;
+      output_js = List.exists (fun t -> t = "js") emit_types || Filename.check_suffix base_output_file ".js";
+      output_c = List.exists (fun t -> t = "c") emit_types || Filename.check_suffix base_output_file ".c";
+      output_mlir = List.exists (fun t -> t = "mlir") emit_types || Filename.check_suffix base_output_file ".mlir";
     } in
     let is_codegen_specified = output_config.output_c || output_config.output_js || output_config.output_mlir in
+    if not is_codegen_specified then begin
+      print_endline (failed_to_infer_output_type_message ());
+    end;
 
+
+    print_endline ("Compiling file: " ^ input_file ^ "...");
     let ast = time_phase "Parse" (fun () -> parse_program input_file) in
     let ir = time_phase "IR Lowering" (fun () -> generate_ir ast) in
     if output_config.output_c then
@@ -84,9 +80,6 @@ let compile_command input_files output_file emit_types _include_dirs _verbose =
     if output_config.output_mlir then
       (* print_endline "Generating MLIR code"; *)
       time_phase "MLIR Codegen" (fun () -> compile_to_target ir "mlir" base_output_file input_file);
-
-    if not is_codegen_specified then
-      print_failed_to_infer_output_type;
 
     report_timings ()  (* This can be moved outside the loop if we prefer aggregate metrics *)
   in
