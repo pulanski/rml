@@ -16,9 +16,37 @@ let emit_c_type = function
 
 let rec emit_c_expr = function
   | IRNot expr -> "!" ^ emit_c_expr expr
+  | IRNegation expr -> "-" ^ emit_c_expr expr
+  | IRArray arr_list ->
+      let arr_list_c = String.concat ", " (List.map emit_c_expr arr_list) in
+      Printf.sprintf "[%s]" arr_list_c
+  | IRArrayRepeat (expr, count) ->
+      let expr_c = emit_c_expr expr in
+      let count_c = emit_c_expr count in
+      Printf.sprintf "[%s; %s]" expr_c count_c
+  | IRArrayRange (start, end_) ->
+      let start_c = emit_c_expr start in
+      let end_c = emit_c_expr end_ in
+      Printf.sprintf "[%s..%s]" start_c end_c
   | IRVariable x -> x
-  | IRPath _ -> "TODO: impl me"
+  | IRPath ir_segment_list ->
+      let segments_c = String.concat "." (List.map (fun segment -> match segment with
+        | IRPathExprSegment (expr, _) -> (match expr with
+          | IRIdent name -> name
+          | IRSelf -> "self"
+          | IRSuper -> "super"
+          | IRCrate -> "crate")
+        | IRPathIdentSegment name -> match name with
+          | IRIdent name -> name
+          | IRSelf -> "self"
+          | IRSuper -> "super"
+          | IRCrate -> "crate"
+      ) ir_segment_list) in
+      Printf.sprintf "%s" segments_c
   | IRReturn expr -> "return " ^ emit_c_expr expr
+  | IRTuple exprs ->
+      let exprs_c = String.concat ", " (List.map emit_c_expr exprs) in
+      Printf.sprintf "(%s)" exprs_c
   | IRCall (func_name, args) ->
       let args_c = String.concat ", " (List.map emit_c_expr args) in
       Printf.sprintf "%s(%s)" func_name args_c

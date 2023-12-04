@@ -25,6 +25,14 @@ mod baz {
     }
 }
 
+fn sum(a: u32, b: u32) -> u32 {
+    for i in 3 {
+        if i == 5 {
+            break;
+        }
+    }
+}
+
 // fn add(a: u32, b: u32) -> u32 {
 //     // a + b // TODO: add support for returning expressions
 //     return a + b;
@@ -32,7 +40,7 @@ mod baz {
 
 fn main() -> u32 {
     let b = 20;
-    let a = c;
+    let a = b;
     // let some_constructor = Some::<u32>;
     // simple array w/ 3 elements
     // TODO: add support for arrays (sema and codegen)
