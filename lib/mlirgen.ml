@@ -73,7 +73,6 @@ and emit_op = function
 
 let rec emit_mlir_stmt = function
   | IRExpr expr -> emit_mlir_expr expr
-  | IRReturn expr -> "return " ^ emit_mlir_expr expr
   | IRVarDecl (_name, expr) ->
       let var_name = fresh_var () in
       Printf.sprintf "%s = %s" var_name (emit_mlir_expr expr)

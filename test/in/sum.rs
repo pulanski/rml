@@ -52,7 +52,7 @@ fn main() -> u32 {
         // life = life - 1;
     }
 
-    // let e = 42;
+    let e = 42;
     // return e;
 } // TODO: improve scope analysis
 

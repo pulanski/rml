@@ -15,7 +15,10 @@ let emit_c_type = function
       Printf.sprintf "%s (%s)" return_ty_str params_str *)
 
 let rec emit_c_expr = function
+  | IRNot expr -> "!" ^ emit_c_expr expr
   | IRVariable x -> x
+  | IRPath _ -> "TODO: impl me"
+  | IRReturn expr -> "return " ^ emit_c_expr expr
   | IRCall (func_name, args) ->
       let args_c = String.concat ", " (List.map emit_c_expr args) in
       Printf.sprintf "%s(%s)" func_name args_c
@@ -73,7 +76,6 @@ and emit_c_binop = function
 
 and emit_c_stmt = function
   | IRExpr expr -> emit_c_expr expr ^ ";"
-  | IRReturn expr -> "return " ^ emit_c_expr expr ^ ";"
   | IRVarDecl (name, expr) ->
       "int " ^ name ^ " = " ^ emit_c_expr expr ^ ";"
   | IRIf (cond, then_stmts, else_stmts) ->

@@ -68,7 +68,6 @@ and emit_js_binop = function
 let emit_js_stmt stmt =
   (* Convert IR statements to JavaScript code *)
   match stmt with
-  | IRReturn e -> Printf.sprintf "return %s;" (emit_js_expr e)
   | IRVarDecl (name, e) -> Printf.sprintf "const %s = %s;" name (emit_js_expr e)
   | IRExpr e -> Printf.sprintf "%s;" (emit_js_expr e)
   | _ -> failwith "Not implemented"

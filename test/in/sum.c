@@ -12,10 +12,11 @@ enum Bar {
 
 int main() {
   int b = 20;
-  int a = b;
+  int a = TODO: impl me;
   while (1) {
   
 }
+  int e = 42;
 }
 struct Trait {
     int (*foo)();

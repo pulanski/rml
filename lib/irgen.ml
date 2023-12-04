@@ -93,9 +93,9 @@ and ir_of_type (ty: ty) : ir_type =
   | StringTy -> IRStringTy
   | BoolTy -> IRBoolTy
   | TensorTy -> IRTensorTy
-  | FuncTy _ -> IRFuncTy
   | ArrayTy ty -> IRArrayTy (ir_of_type ty)
   | CustomTy name -> IRCustomTy name
+  | FuncTy (param_types, return_type) -> IRFuncTy (List.map ir_of_type param_types, ir_of_type return_type)
 
 and ir_of_param ((name, ty): (string * ty)) : ir_param =
   { name = name; param_type = ir_of_type ty }
@@ -103,9 +103,6 @@ and ir_of_param ((name, ty): (string * ty)) : ir_param =
 and ir_of_stmt (statement: stmt) : ir_stmt =
   match statement with
   | Expr expr -> IRExpr (ir_of_expr expr)
-  (* TODO: move to expr *)
-  (* | Return (Some expr) -> IRReturn (ir_of_expr expr)
-  | Return None -> IRReturn (IRLiteral (IRInt 0)) *)
   | VarDecl (_, name, _, expr) -> IRVarDecl (name, ir_of_expr expr)
   | If (cond, then_stmts, else_stmts) -> IRIf (ir_of_expr cond, List.map ir_of_stmt then_stmts, List.map ir_of_stmt else_stmts)
   | For (name, expr, body) -> IRFor (name, ir_of_expr expr, List.map ir_of_stmt body)
@@ -131,8 +128,17 @@ and ir_of_pattern (pattern: pattern) : ir_pattern =
 and ir_of_expr (expression: expr) : ir_expr =
   match expression with
   | Variable name -> IRVariable name
+  | Return (Some expr) -> IRReturn (ir_of_expr expr)
+  | Return None -> IRReturn (IRLiteral (IRInt 0))
   | Call (name, args) -> IRCall (name, List.map ir_of_expr args)
   | BinOp (binop, left, right) -> IRBinOp (ir_of_binop binop, ir_of_expr left, ir_of_expr right)
+  | StructInit (name, fields) ->
+   IRStructInit (name, List.map (fun (name, expr) -> (name, ir_of_expr expr)) fields)
+  | RangeExpr r -> (match r with
+    | Range (rstart, rend) -> IRRange (ir_of_expr rstart, ir_of_expr rend)
+    | RangeInclusive (rstart, rend) -> IRRange (ir_of_expr rstart, ir_of_expr rend)
+    | _ -> failwith "RangeExpr: Not implemented")
+  | Not expr -> IRNot (ir_of_expr expr)
   | Tensor elements -> IRTensor (calculate_shape elements, List.map ir_of_expr elements)
   | Literal x -> (match x with
     | LitChar x -> IRLiteral (IRChar x)
@@ -144,35 +150,9 @@ and ir_of_expr (expression: expr) : ir_expr =
     | LitRawByteString x -> IRLiteral (IRString x)
     | LitByteString x -> IRLiteral (IRString x)
     | LitByte x -> IRLiteral (IRInt (int_of_char x))
-    (* | Array x -> IRArray x
-    | Custom x -> IRCustom x *)
     )
   | PathExpr path -> ir_of_path_expr path
   | QualifiedPathExpr qualified_path -> ir_of_qualified_path qualified_path
-  | StructInit (name, fields) -> IRStructInit (name, List.map (fun (name, expr) -> (name, ir_of_expr expr)) fields)
-  (* | EnumInit (name, variant, exprs) -> IREnumInit (name_of_segment name, variant, List.map ir_of_expr exprs) *)
-  (* | Lambda (params, body) -> IRLambda (List.map ir_of_param params, List.map ir_of_stmt body) *)
-  (* | ArrayExpr exprs -> IRArrayExpr (List.map ir_of_expr exprs) *)
-  (* | IndexExpr (expr, index) -> IRIndexExpr (ir_of_expr expr, ir_of_expr index)
-  | Negation expr -> IRNegation (ir_of_expr expr)
-  | Not expr -> IRNot (ir_of_expr expr)
-  | Borrow expr -> IRBorrow (ir_of_expr expr)
-  | BorrowMut expr -> IRBorrowMut (ir_of_expr expr)
-  | Deref expr -> IRDeref (ir_of_expr expr)
-  | ErrorProp expr -> IRErrorProp (ir_of_expr expr)
-  | CompoundAssign (op, left, right) -> IRCompoundAssign (ir_of_binop op, ir_of_expr left, ir_of_expr right)
-  | TupleExpr exprs -> IRTupleExpr (List.map ir_of_expr exprs)
-  | TupleIndexExpr (expr, index) -> IRTupleIndexExpr (ir_of_expr expr, index)
-  | MethodCall (expr, name, args) -> IRMethodCall (ir_of_expr expr, name, List.map ir_of_expr args)
-  | Return (Some expr) -> IRReturn (ir_of_expr expr)
-  | Return None -> IRReturn (IRLiteral (IRInt 0))
-  | FieldAccess (expr, name) -> IRFieldAccess (ir_of_expr expr, name) *)
-  (* | RangeExpr expr -> match expr with
-    | Range (start, end) -> IRRangeExpr (ir_of_expr start, ir_of_expr end)
-    | RangeInclusive (start, end) -> IRRangeInclusiveExpr (ir_of_expr start, ir_of_expr end)
-    | RangeFrom (start) -> IRRangeFromExpr (ir_of_expr start)
-    | RangeTo (end) -> IRRangeToExpr (ir_of_expr end)
-    | Range (start, end) -> IRRangeExpr (ir_of_expr start, ir_of_expr end) *)
   | _ -> failwith "Expr: Not implemented"
 
 and ir_of_path_expr (path_expr: path_expr) : ir_expr =
@@ -180,8 +160,44 @@ and ir_of_path_expr (path_expr: path_expr) : ir_expr =
   | PathInExpr path -> ir_of_path path
   | _ -> failwith "PathExpr: Not implemented"
 
-and ir_of_path (_path: path) : ir_expr =
-  failwith "Path: Not implemented"
+and ir_of_path (path: path) : ir_expr =
+  match path with
+  | [] -> failwith "Empty path not supported"
+  | segments ->
+    let ir_segments = List.map ir_of_path_segment segments in
+    IRPath ir_segments
+
+and ir_of_path_segment (segment: path_segment) : ir_segment =
+  match segment with
+  | PathIdentSegment ident_segment -> IRPathIdentSegment (ir_of_path_ident_segment ident_segment)
+  | PathExprSegment (ident_segment, generic_args) ->
+      let ir_ident_segment = ir_of_path_ident_segment ident_segment in
+      let ir_generic_args = List.map ir_of_generic_arg generic_args in
+      IRPathExprSegment (ir_ident_segment, ir_generic_args)
+
+and ir_of_path_ident_segment (segment: path_ident_segment) : ir_ident_segment =
+  match segment with
+  | PathIdent ident -> IRIdent ident
+  | Self -> IRSelf
+  | Super -> IRSuper
+  | Crate -> IRCrate
+
+and ir_of_generic_arg (arg: generic_arg) : ir_generic_arg =
+  match arg with
+  | TyArg ty -> IRTyArg (ir_of_type ty)
+  | LitArg lit -> IRLitArg (ir_of_literal lit)
+
+and ir_of_literal (lit: literal) : ir_literal =
+  match lit with
+  | LitInteger x -> IRInt x
+  | LitFloat x -> IRFloat x
+  | LitChar x -> IRChar x
+  | LitString x -> IRString x
+  | LitBool x -> IRBool x
+  | LitRawString x -> IRString x
+  | LitRawByteString x -> IRString x
+  | LitByteString x -> IRString x
+  | LitByte x -> IRInt (int_of_char x)
 
 and ir_of_qualified_path (qualified_path: qualified_path) : ir_expr =
   match qualified_path with
