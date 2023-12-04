@@ -67,8 +67,10 @@ rule token = parse
   | "crate"               { CRATE }
   | "self"                { SELF }
   | "super"               { SUPER }
+  | '@'                   { AT }
   | "trait"               { TRAIT }
   | "while"               { WHILE }
+  | "ref"                 { REF }
   | "do"                  { DO }
   | "for"                 { FOR }
   | "loop"                { LOOP }
