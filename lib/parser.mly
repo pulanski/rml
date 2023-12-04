@@ -2,25 +2,47 @@
   open Ast
 %}
 
-%token PLUS MINUS STAR DIV LANGLE RANGLE
-%token PLUSEQ MINUSEQ STAREQ DIVEQ MODEQ ANDEQ OREQ XOREQ SHLEQ SHREQ UNDERSCORE
-%token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE SEMICOLON EQ COMMA COLON RARROW PATH_SEP BANG HASH CARET AMP PIPE SHL SHR PIPEPIPE AMPAMP
-%token U32 F32
-%token RETURN FN LET IF ELSE MUT FOR WHILE BREAK CONTINUE IN MATCH CASE TRUE FALSE VOID BOOL LOOP STRUCT ENUM TYPE TRAIT CONST IMPL USE AS PUB SELF SUPER MOD DO CRATE
-%token DOT DOTDOT DOTDOTEQ QUESTION EQEQ NOT_EQ LTEQ GTEQ
-%token <string> IDENT
-%token <string> STRING_LITERAL
-%token <string> RAW_STRING_LITERAL
-%token <string> BYTE_LITERAL
-%token <string> BYTE_STRING_LITERAL
-%token <string> RAW_BYTE_STRING_LITERAL
-%token <string> CHAR_LITERAL
-%token <string> INTEGER_LITERAL
-%token <string> FLOAT_LITERAL
+/* Arithmetic Operators */
+%token PLUS MINUS STAR DIV
+
+/* Assignment Operators */
+%token EQ PLUSEQ MINUSEQ STAREQ DIVEQ MODEQ
+%token ANDEQ OREQ XOREQ SHLEQ SHREQ
+
+/* Miscellaneous Symbols */
+%token UNDERSCORE BANG HASH CARET AMP PIPE
+%token SHL SHR PIPEPIPE AMPAMP
+
+/* Comparison Operators */
+%token LANGLE RANGLE EQEQ NOT_EQ LTEQ GTEQ
+
+/* Brackets and Punctuation */
+%token LPAREN RPAREN LBRACKET RBRACKET
+%token LBRACE RBRACE SEMICOLON COMMA COLON
+
+/* Special Operators */
+%token RARROW PATH_SEP QUESTION DOT DOTDOT DOTDOTEQ
+
+/* Primitive Data Types */
+%token U32 F32 BOOL VOID
+
+/* Keywords */
+%token RETURN FN LET IF ELSE MUT FOR WHILE
+%token BREAK CONTINUE IN MATCH CASE TRUE FALSE
+%token LOOP STRUCT ENUM TYPE TRAIT CONST IMPL
+%token USE AS PUB SELF SUPER MOD DO CRATE REF AT
+
+/* Literals */
+%token <string> IDENT STRING_LITERAL RAW_STRING_LITERAL
+%token <string> BYTE_LITERAL BYTE_STRING_LITERAL
+%token <string> RAW_BYTE_STRING_LITERAL CHAR_LITERAL
+%token <string> INTEGER_LITERAL FLOAT_LITERAL
+
 %token EOF
 
+/* Operator Precedence */
 %left PLUS MINUS        /* lowest precedence */
-%left TIMES DIV         /* medium precedence */
+%left STAR DIV          /* medium precedence */
 %nonassoc UMINUS        /* highest precedence */
 
 %start <Ast.program> program
@@ -36,6 +58,8 @@ item_list:
   | item item_list { $1 :: $2 }
   | { [] }
 
+// Items
+// https://doc.rust-lang.org/stable/reference/items.html
 item:
   | function_item { $1 }
   | struct_item { $1 }
@@ -49,10 +73,6 @@ item:
 function_item:
   | attributes func { FunctionItem { $2 with func_attributes = $1 } }
 
-// func:
-// | FN IDENT LPAREN params RPAREN RARROW return_type block {
-//     { proto = { name = $2; params = $4; return_type = $7 }; body = $8; func_attributes = [] }
-// }
 func:
 | FN IDENT LPAREN params RPAREN RARROW return_type block {
     let modified_block = transform_last_expr_to_return $8 in
@@ -415,10 +435,6 @@ match_cases:
 match_case:
 | CASE pattern RARROW block { Case ($2, $4) }
 
-pattern:
-| IDENT { VariablePattern $1 }
-(* Other patterns *)
-
 opt_tensor_type:
 | (* empty *) { None }
 | tensor_type { Some (TTensor $1) }
@@ -470,24 +486,6 @@ attributes:
   | attribute attributes { $1 :: $2 }
   | { [] }
 
-// TODO: support block exprs
-//   Syntax
-// BlockExpression :
-//    {
-//       InnerAttribute*
-//       Statements?
-//    }
-
-// Statements :
-//       Statement+
-//    | Statement+ ExpressionWithoutBlock
-//    | ExpressionWithoutBlock
-
-// block_expr:
-//   | inner_attrs stmt_list { BlockExpr ($2) }
-//   | inner_attrs stmt_list expr { BlockExpr ($2 @ [Expr $3]) }
-//   | inner_attrs expr { BlockExpr ([Expr $2]) }
-
 attribute:
   | inner_attribute { $1 }
   | outer_attribute { $1 }
@@ -519,3 +517,36 @@ simple_path:
 
 simple_path_segment:
   | IDENT { $1 }
+
+// pattern:
+// | IDENT { VariablePattern $1 }
+// (* Other patterns *)
+
+/* Patterns */
+pattern:
+  | identifier_pattern { $1 }
+  | wildcard_pattern { $1 }
+  | range_pattern { $1 }
+  // Add other patterns here
+
+identifier_pattern:
+  | REF MUT IDENT AT pattern_no_top_alt { RefMutPatternNoTopAlt ($3, $5) }
+  | REF IDENT AT pattern_no_top_alt { RefPatternNoTopAlt ($2, $4) }
+  | MUT IDENT AT pattern_no_top_alt { MutPatternNoTopAlt ($2, $4) }
+  | REF MUT IDENT { RefMutPattern ($3) }
+  | REF IDENT { RefPattern ($2) }
+  | MUT IDENT { MutPattern ($2) }
+  | IDENT { IdentifierPattern $1 }
+  | IDENT AT pattern { IdentifierAtPattern ($1, $3) }
+
+wildcard_pattern:
+  | UNDERSCORE { WildcardPattern }
+
+range_pattern:
+  | expr DOTDOT expr { RangePattern ($1, $3) }
+  | expr DOTDOTEQ expr { RangeInclusivePattern ($1, $3) }
+
+pattern_no_top_alt:
+  | identifier_pattern { $1 }
+  | wildcard_pattern { $1 }
+  | range_pattern { $1 }

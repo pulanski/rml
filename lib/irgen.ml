@@ -132,10 +132,16 @@ and ir_of_case (case: case) : ir_match_case =
 
 and ir_of_pattern (pattern: pattern) : ir_pattern =
   match pattern with
-  | LiteralPattern lit -> IRLiteralPattern (ir_of_expr (Literal (data_type_to_literal lit)))
+  (* | RefMutPatternNoTopAlt (name, pattern) -> {
+    ir_pattern_name = name;
+    ir_pattern = ir_of_pattern pattern;
+    ir_pattern_ref_mut = IRRefMut
+  } *)
+  (* | LiteralPattern lit -> IRLiteralPattern (ir_of_expr (Literal (data_type_to_literal lit)))
   | VariablePattern name -> IRVariablePattern name
   | TuplePattern pats -> IRTuplePattern (List.map ir_of_pattern pats)
-  | CustomPattern (name, pats) -> IRCustomPattern (name, List.map ir_of_pattern pats)
+  | CustomPattern (name, pats) -> IRCustomPattern (name, List.map ir_of_pattern pats) *)
+  | _ -> failwith "Pattern IR generation: Not yet implemented"
 
 and ir_of_expr (expression: expr) : ir_expr =
   match expression with

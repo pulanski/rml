@@ -17,7 +17,6 @@ and use_tree =
   | NestedUseTree of simple_path * use_tree list
   | GlobUseTree of simple_path
   | RenamedUseTree of simple_path * string
-  (* | UseDecl of use_tree *)
 
 and case =
   | Case of pattern * stmt list
@@ -120,10 +119,21 @@ and ty =
   | CustomTy of string  (* For user-defined types *)
 
 and pattern =
-  | LiteralPattern of data_type
+  | RefMutPatternNoTopAlt of string * pattern
+  | RefPatternNoTopAlt of string * pattern
+  | MutPatternNoTopAlt of string * pattern
+  | RefMutPattern of string
+  | RefPattern of string
+  | MutPattern of string
+  | IdentifierPattern of string
+  | IdentifierAtPattern of string * pattern
+  | WildcardPattern
+  | RangePattern of expr * expr
+  | RangeInclusivePattern of expr * expr
+  (* | LiteralPattern of data_type
   | VariablePattern of string
   | TuplePattern of pattern list
-  | CustomPattern of string * pattern list  (* For matching user-defined types *)
+  | CustomPattern of string * pattern list  For matching user-defined types *)
 
 and visibility =
   | Public
