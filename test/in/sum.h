@@ -8,5 +8,6 @@ struct Foo {
 
 int sum(int a, int b);
 int main();
+int foo();
 
 #endif /* SUM_H */

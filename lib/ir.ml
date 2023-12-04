@@ -61,8 +61,7 @@ and ir_stmt =
   | IRMatch of ir_expr * ir_match_case list        (* match expression with cases *)
   | IRWhile of ir_expr * ir_stmt list              (* while condition do block *)
   | IRLoop of ir_stmt list                         (* loop block *)
-  | IRBreak
-  | IRContinue
+  | IREmpty
 
 and ir_match_case =
   | IRCase of ir_pattern * ir_stmt list            (* case pattern -> block *)
@@ -105,6 +104,8 @@ and ir_expr =
   | IRArrayRepeat of ir_expr * ir_expr
   | IRArrayRange of ir_expr * ir_expr
   | IRPath of ir_segment list
+  | IRBreak
+  | IRContinue
 
 and ir_literal =
   | IRInt of int

@@ -23,6 +23,8 @@ let rec emit_mlir_expr = function
       let rhs_ssa = emit_mlir_expr rhs in
       let result_var = fresh_var () in
       Printf.sprintf "%s = %s %s, %s : f64" result_var (emit_op op) lhs_ssa rhs_ssa
+  | IRBreak -> "break"
+  | IRContinue -> "continue"
   | IRCall (func_name, args) ->
       let args_str = String.concat ", " (List.map emit_mlir_expr args) in
       Printf.sprintf "%s(%s)" func_name args_str
@@ -96,8 +98,7 @@ let rec emit_mlir_stmt = function
       let expr_ssa = emit_mlir_expr expr in
       let cases_str = String.concat "\n  " (List.map emit_mlir_case cases) in
       Printf.sprintf "match %s {\n  %s\n}" expr_ssa cases_str
-  | IRBreak -> "break"
-  | IRContinue -> "continue"
+  | IREmpty -> ""
 
 and emit_mlir_case = function
   | IRCase (pattern, stmts) ->

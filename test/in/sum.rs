@@ -19,7 +19,7 @@ mod baz {
     fn sum(a: u32, b: u32) -> u32 {
         for i in 3 {
             // if i == 5 {
-            break;
+            // break;
             // }
         }
     }
@@ -29,6 +29,10 @@ fn sum(a: u32, b: u32) -> u32 {
     for i in 3 {
         if i == 5 {
             break;
+        }
+
+        if i == 6 {
+            continue;
         }
     }
 }
@@ -88,16 +92,16 @@ trait Trait {
 // let d = c - foo.a;
 // let e = d * foo.b;
 
-// fn foo() -> u32 {
-//     let a = 2;
-//     let b = 20;
-//     let c = 3;
-//     let d = 17;
-//     // let e = c + d;
-//     // let f = a - b;
-//     // let g = f * e;
-//     // return g;
-// }
+fn foo() -> u32 {
+    let a = 2;
+    let b = 20;
+    let c = 3;
+    let d = 17;
+    let e = c + d;
+    let f = a - b;
+    let g = f * e;
+    return g;
+}
 
 // while true {
 //     let f = 2;
