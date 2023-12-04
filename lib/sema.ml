@@ -9,6 +9,20 @@ type environment = {
   traits: trait_def StringMap.t;
 }
 
+let rec string_of_type = function
+  | IntTy -> "int"
+  | FloatTy -> "float"
+  | CharTy -> "char"
+  | StringTy -> "string"
+  | BoolTy -> "bool"
+  | TensorTy -> "tensor"
+  | ArrayTy ty -> "array of " ^ string_of_type ty
+  | FuncTy (param_tys, return_ty) ->
+      let param_str = String.concat ", " (List.map string_of_type param_tys) in
+      "(" ^ param_str ^ ") -> " ^ string_of_type return_ty
+  | CustomTy custom_type -> custom_type
+  | VoidTy -> "void"
+
 let rec data_type_to_ty = function
   | I8 _ -> IntTy
   | I16 _ -> IntTy
@@ -216,30 +230,22 @@ and analyze_stmt env = function
        | None -> ());
       update_env env name expr_type
   | Expr expr ->
-      ignore (type_of_expr env expr); env
-      (* TODO: Move to eval on exprs *)
-  (* | Return (Some expr) ->
-      ignore (type_of_expr env expr); env
-  | Return None -> env
-    | If (cond, then_stmts, else_stmts) ->
-      ignore (type_of_expr env cond);
-      let _then_env = analyze_stmt_list env then_stmts in
-      let _else_env = analyze_stmt_list env else_stmts in
-      (* TODO: Decide how to merge then_env and else_env if necessary *)
-      env  or the merged environment *)
+    ignore (type_of_expr env expr); env
+  (* TODO: Move to eval on exprs *)
   | While (cond, body) ->
-      ignore (type_of_expr env cond);
-      let _body_env = analyze_stmt_list env body in
-      env  (* TODO: or body_env if want to consider changes in the loop *)
-  | Break -> env
-  | Continue -> env
-  | _ -> failwith "Not implemented"
-  (* | Match (expr, cases) ->
-      ignore (type_of_expr env expr);
-      let _ = List.map (analyze_case env) cases in
-      env
-  | _ -> failwith "Not implemented" *)
-  (* | _ -> failwith "Not implemented" *)
+    ignore (type_of_expr env cond);
+    let _body_env = analyze_stmt_list env body in
+    env  (* TODO: or body_env if want to consider changes in the loop *)
+  | If (cond, _then_stmts, _else_stmts) ->
+    (* If cond is not a bool, throw an error *)
+    if type_of_expr env cond <> BoolTy then
+      failwith "Type mismatch in if condition";
+    failwith "IfStmt: Not implemented"
+  | Empty -> env
+  | Loop body ->
+    let _body_env = analyze_stmt_list env body in
+    env
+  | _ -> failwith "Analyze statement: Not yet implemented"
 
 and analyze_expr env expr =
   match expr with
@@ -257,7 +263,7 @@ and analyze_expr env expr =
   | Lambda lambda -> analyze_lambda env lambda
   | TupleExpr exprs ->
       ignore (List.map (analyze_expr env) exprs)
-  | _ -> failwith "Type noasdfasdft implemented"
+  | _ -> failwith "Type not implemented"
   (* | StructInit (struct_name, field_inits) ->
       analyze_struct_init env struct_name field_inits
   | EnumInit (enum_name, variant, value_opt) ->

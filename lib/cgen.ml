@@ -1,4 +1,5 @@
 open Ir
+(* open Sema *)
 
 let emit_c_type = function
   | IRVoidTy -> "void"
@@ -15,6 +16,8 @@ let emit_c_type = function
       Printf.sprintf "%s (%s)" return_ty_str params_str *)
 
 let rec emit_c_expr = function
+  | IRBreak -> "break"
+  | IRContinue -> "continue"
   | IRNot expr -> "!" ^ emit_c_expr expr
   | IRNegation expr -> "-" ^ emit_c_expr expr
   | IRArray arr_list ->
@@ -104,8 +107,8 @@ and emit_c_binop = function
 
 and emit_c_stmt = function
   | IRExpr expr -> emit_c_expr expr ^ ";"
-  | IRVarDecl (name, expr) ->
-      "int " ^ name ^ " = " ^ emit_c_expr expr ^ ";"
+  | IREmpty -> "/* empty statement */"
+  | IRVarDecl (name, expr) -> "int " ^ name ^ " = " ^ emit_c_expr expr ^ ";"
   | IRIf (cond, then_stmts, else_stmts) ->
       let cond_c = emit_c_expr cond in
       let then_c = String.concat "\n  " (List.map emit_c_stmt then_stmts) in
@@ -129,8 +132,6 @@ and emit_c_stmt = function
   | IRLoop body ->
       let body_c = String.concat "\n  " (List.map emit_c_stmt body) in
       Printf.sprintf "while (1) {\n  %s\n}" body_c
-  | IRBreak -> "break;"
-  | IRContinue -> "continue;"
   (* Extend with more statement types as needed *)
 
 and emit_c_case case =

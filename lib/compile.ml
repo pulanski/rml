@@ -1,5 +1,6 @@
 open Cmdliner
-(* open Sema
+(*
+open Sema
 open Mlirgen
 open Jsgen *)
 open Irgen
@@ -71,6 +72,8 @@ let compile_command input_files output_file emit_types _include_dirs _verbose =
 
     print_endline ("Compiling file: " ^ input_file ^ "...");
     let ast = time_phase "Parse" (fun () -> parse_program input_file) in
+    (* TODO: further flesh out semantic analysis *)
+    (* let () = time_phase "Semantic Analysis" (fun () -> type_check_program ast) in *)
     let ir = time_phase "IR Lowering" (fun () -> generate_ir ast) in
     if output_config.output_c then
       time_phase "C Codegen" (fun () -> compile_to_target ir "c" base_output_file input_file);

@@ -171,17 +171,21 @@ expr:
 | field_expr { $1 }
 // | closure_expr { $1 } TODO: support closures
 // | async_block_expr { $1 } TODO: support async blocks
-// | continue_expr { $1 } TODO: support continue
-// | break_expr { $1 } TODO: support break
+| continue_expr { $1 }
+| break_expr { $1 }
 // | loop_expr { $1 } TODO: support loop
 | range_expr { RangeExpr ($1) }
 | return_expr { $1 }
 // | underscore_expr { $1 } TODO: support underscore
 // | macro_invocation { $1 } TODO: support macro invocations
-// | IDENT { Variable $1 }
-| LBRACKET tensor_list RBRACKET { Tensor ($2) }
-| IDENT LBRACE field_init_list RBRACE { StructInit ($1, $3) }
+// | IDENT LBRACE field_init_list RBRACE { StructInit ($1, $3) }
 // | yield_expr { $1 } TODO: support yield
+
+break_expr:
+| BREAK { Break }
+
+continue_expr:
+| CONTINUE { Continue }
 
 path_expr:
 | path_in_expr { PathInExpr ($1) }
@@ -350,7 +354,7 @@ stmt:
 | FOR IDENT IN expr block { For ($2, $4, $5) }
 | MATCH expr LBRACE match_cases RBRACE { Match ($2, $4) }
 | expr { Expr ($1) }
-| BREAK SEMICOLON { Break }
+| expr SEMICOLON { Expr ($1) }
 
 /* Declaration Statements */
 declaration_stmt:

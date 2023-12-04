@@ -104,8 +104,8 @@ and stmt =
   | Match of expr * case list
   | While of expr * stmt list
   | Loop of stmt list
-  | Break
-  | Continue
+  (* | Break
+  | Continue *)
   | ItemDecl of item
   | Empty
 
@@ -177,6 +177,8 @@ and qualified_path =
 and expr =
   | Literal of literal
   | PathExpr of path_expr
+  | Continue
+  | Break
   | QualifiedPathExpr of qualified_path
   | Variable of string
   | Call of string * expr list

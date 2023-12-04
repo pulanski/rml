@@ -109,8 +109,6 @@ and ir_of_stmt (statement: stmt) : ir_stmt =
   | While (cond, body) -> IRWhile (ir_of_expr cond, List.map ir_of_stmt body)
   | Loop (body) -> IRLoop (List.map ir_of_stmt body)
   | Match (expr, cases) -> IRMatch (ir_of_expr expr, List.map ir_of_case cases)
-  | Break -> IRBreak
-  | Continue -> IRContinue
   | ItemDecl item ->
     (match item with
     (* | FunctionItem func -> IRFunc (ir_of_func func) *)
@@ -121,7 +119,7 @@ and ir_of_stmt (statement: stmt) : ir_stmt =
     | _ -> failwith "Nested items not supported yet"
     )
   (* | ItemDecl _ -> failwith "ItemDecl not supported yet" *)
-  | Empty -> failwith "Empty not supported yet"
+  | Empty -> IREmpty
 
 and ir_of_case (case: case) : ir_match_case =
   match case with
@@ -141,6 +139,8 @@ and ir_of_expr (expression: expr) : ir_expr =
   | Return (Some expr) -> IRReturn (ir_of_expr expr)
   | Negation expr -> IRNegation (ir_of_expr expr)
   | Return None -> IRReturn (IRLiteral (IRInt 0))
+  | Break -> IRBreak
+  | Continue -> IRContinue
   | Call (name, args) -> IRCall (name, List.map ir_of_expr args)
   | BinOp (binop, left, right) -> IRBinOp (ir_of_binop binop, ir_of_expr left, ir_of_expr right)
   | StructInit (name, fields) ->
