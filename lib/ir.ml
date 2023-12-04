@@ -6,6 +6,7 @@ and ir_item =
   | IREnumDef of ir_enum_def
   | IRTraitDef of ir_trait_def
   | IRModuleDef of ir_module_def
+  | IRUse of string list
   (* Add other item types as necessary *)
 
 and ir_case = {
@@ -104,6 +105,7 @@ and ir_expr =
   | IRArrayRepeat of ir_expr * ir_expr
   | IRArrayRange of ir_expr * ir_expr
   | IRPath of ir_segment list
+  | IRUnderscore
   | IRBreak
   | IRContinue
 

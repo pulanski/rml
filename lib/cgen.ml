@@ -18,6 +18,7 @@ let emit_c_type = function
 let rec emit_c_expr = function
   | IRBreak -> "break"
   | IRContinue -> "continue"
+  | IRUnderscore -> "_"
   | IRNot expr -> "!" ^ emit_c_expr expr
   | IRNegation expr -> "-" ^ emit_c_expr expr
   | IRArray arr_list ->
@@ -169,6 +170,7 @@ and emit_c_item for_header = function
   | IREnumDef enum_def -> emit_c_enum enum_def
   | IRTraitDef trait_def -> emit_c_trait trait_def
   | IRModuleDef _module_def -> "// Ignore module definition as C does not have a module system.\n"
+  | IRUse _use -> "// Ignore use statement as C does not have a module system.\n"
   (* | IRImplDef impl_def -> "TODO: impl me" *)
   (* Add other item types as necessary *)
 

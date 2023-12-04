@@ -40,8 +40,13 @@ and ir_of_item (item: item) : ir_item =
   | EnumItem enum_def -> ir_of_enum enum_def
   | TraitItem trait_def -> ir_of_trait trait_def
   | ModuleItem module_def -> ir_of_module module_def
-  | UseItem _ -> failwith "UseItem not supported yet"
+  | UseItem use_tree -> ir_of_use_tree use_tree
   | TypeAliasItem _ -> failwith "TypeAliasItem not supported yet"
+
+and ir_of_use_tree (use_tree: use_tree) : ir_item =
+  match use_tree with
+  | RenamedUseTree (_path, _name) -> failwith "RenamedUseTree not supported yet"
+  | _ -> failwith "UseTree not supported yet"
 
 and ir_of_trait (trait_def: trait_def) : ir_item =
   IRTraitDef {
@@ -141,6 +146,7 @@ and ir_of_expr (expression: expr) : ir_expr =
   | Return None -> IRReturn (IRLiteral (IRInt 0))
   | Break -> IRBreak
   | Continue -> IRContinue
+  | Underscore -> IRUnderscore
   | Call (name, args) -> IRCall (name, List.map ir_of_expr args)
   | BinOp (binop, left, right) -> IRBinOp (ir_of_binop binop, ir_of_expr left, ir_of_expr right)
   | StructInit (name, fields) ->
