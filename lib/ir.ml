@@ -91,6 +91,8 @@ and ir_expr =
   | IRLiteral of ir_literal
   | IRReturn of ir_expr
   | IRVariable of string
+  | IRTuple of ir_expr list
+  | IRNegation of ir_expr
   | IRNot of ir_expr
   | IRCall of string * ir_expr list
   | IRBinOp of ir_binop * ir_expr * ir_expr
@@ -99,6 +101,9 @@ and ir_expr =
   | IREnumInit of string * string * ir_expr
   | IRLambda of ir_param list * ir_stmt list
   | IRRange of ir_expr * ir_expr
+  | IRArray of ir_expr list
+  | IRArrayRepeat of ir_expr * ir_expr
+  | IRArrayRange of ir_expr * ir_expr
   | IRPath of ir_segment list
 
 and ir_literal =

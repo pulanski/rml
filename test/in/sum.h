@@ -6,6 +6,7 @@ struct Foo {
   int b;
 };
 
+int sum(int a, int b);
 int main();
 
 #endif /* SUM_H */

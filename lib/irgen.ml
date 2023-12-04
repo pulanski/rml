@@ -111,7 +111,16 @@ and ir_of_stmt (statement: stmt) : ir_stmt =
   | Match (expr, cases) -> IRMatch (ir_of_expr expr, List.map ir_of_case cases)
   | Break -> IRBreak
   | Continue -> IRContinue
-  | ItemDecl _ -> failwith "ItemDecl not supported yet"
+  | ItemDecl item ->
+    (match item with
+    (* | FunctionItem func -> IRFunc (ir_of_func func) *)
+    (* | StructItem struct_def -> ir_of_struct struct_def
+    | EnumItem enum_def -> ir_of_enum enum_def
+    | TraitItem trait_def -> ir_of_trait trait_def
+    | ModuleItem module_def -> ir_of_module module_def *)
+    | _ -> failwith "Nested items not supported yet"
+    )
+  (* | ItemDecl _ -> failwith "ItemDecl not supported yet" *)
   | Empty -> failwith "Empty not supported yet"
 
 and ir_of_case (case: case) : ir_match_case =
@@ -128,16 +137,14 @@ and ir_of_pattern (pattern: pattern) : ir_pattern =
 and ir_of_expr (expression: expr) : ir_expr =
   match expression with
   | Variable name -> IRVariable name
+  | TupleExpr exprs -> IRTuple (List.map ir_of_expr exprs)
   | Return (Some expr) -> IRReturn (ir_of_expr expr)
+  | Negation expr -> IRNegation (ir_of_expr expr)
   | Return None -> IRReturn (IRLiteral (IRInt 0))
   | Call (name, args) -> IRCall (name, List.map ir_of_expr args)
   | BinOp (binop, left, right) -> IRBinOp (ir_of_binop binop, ir_of_expr left, ir_of_expr right)
   | StructInit (name, fields) ->
    IRStructInit (name, List.map (fun (name, expr) -> (name, ir_of_expr expr)) fields)
-  | RangeExpr r -> (match r with
-    | Range (rstart, rend) -> IRRange (ir_of_expr rstart, ir_of_expr rend)
-    | RangeInclusive (rstart, rend) -> IRRange (ir_of_expr rstart, ir_of_expr rend)
-    | _ -> failwith "RangeExpr: Not implemented")
   | Not expr -> IRNot (ir_of_expr expr)
   | Tensor elements -> IRTensor (calculate_shape elements, List.map ir_of_expr elements)
   | Literal x -> (match x with
@@ -153,12 +160,25 @@ and ir_of_expr (expression: expr) : ir_expr =
     )
   | PathExpr path -> ir_of_path_expr path
   | QualifiedPathExpr qualified_path -> ir_of_qualified_path qualified_path
+  | RangeExpr r -> (match r with
+    | Range (rstart, rend) -> IRRange (ir_of_expr rstart, ir_of_expr rend)
+    | RangeInclusive (rstart, rend) -> IRRange (ir_of_expr rstart, ir_of_expr rend)
+    | _ -> failwith "RangeExpr: Not implemented")
+  | ArrayExpr exprs -> (match exprs with
+    | ArrayLit exprs -> IRArray (List.map ir_of_expr exprs)
+    | ArrayRepeat (expr, count) -> IRArrayRepeat (ir_of_expr expr, ir_of_expr count)
+    | ArrayRange range -> (match range with
+      | Range (rstart, rend) -> IRArrayRange (ir_of_expr rstart, ir_of_expr rend)
+      (* | ArrayRangeInclusive (start, end) -> IRArrayRange (ir_of_expr start, ir_of_expr end) *)
+      | _ -> failwith "ArrayExpr: Not implemented"
+      )
+    )
   | _ -> failwith "Expr: Not implemented"
 
 and ir_of_path_expr (path_expr: path_expr) : ir_expr =
   match path_expr with
   | PathInExpr path -> ir_of_path path
-  | _ -> failwith "PathExpr: Not implemented"
+  | QualifiedPathInExpr qualified_path -> ir_of_qualified_path qualified_path
 
 and ir_of_path (path: path) : ir_expr =
   match path with
