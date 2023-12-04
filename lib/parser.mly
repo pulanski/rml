@@ -3,7 +3,7 @@
 %}
 
 %token PLUS MINUS STAR DIV LANGLE RANGLE
-%token PLUSEQ MINUSEQ STAREQ DIVEQ MODEQ ANDEQ OREQ XOREQ SHLEQ SHREQ
+%token PLUSEQ MINUSEQ STAREQ DIVEQ MODEQ ANDEQ OREQ XOREQ SHLEQ SHREQ UNDERSCORE
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE SEMICOLON EQ COMMA COLON RARROW PATH_SEP BANG HASH CARET AMP PIPE SHL SHR PIPEPIPE AMPAMP
 %token U32 F32
 %token RETURN FN LET IF ELSE MUT FOR WHILE BREAK CONTINUE IN MATCH CASE TRUE FALSE VOID BOOL LOOP STRUCT ENUM TYPE TRAIT CONST IMPL USE AS PUB SELF SUPER MOD DO CRATE
@@ -157,7 +157,7 @@ type_alias:
 // https://doc.rust-lang.org/stable/reference/expressions.html
 expr:
 | literal_expr { Literal ($1) }
-// | path_expr { PathExpr ($1) }
+| path_expr { PathExpr ($1) }
 | operator_expr { $1 }
 | grouped_expr { $1 }
 | array_expr { ArrayExpr ($1) }
@@ -178,12 +178,52 @@ expr:
 | return_expr { $1 }
 // | underscore_expr { $1 } TODO: support underscore
 // | macro_invocation { $1 } TODO: support macro invocations
-| IDENT { Variable $1 }
+// | IDENT { Variable $1 }
 | LBRACKET tensor_list RBRACKET { Tensor ($2) }
 | IDENT LBRACE field_init_list RBRACE { StructInit ($1, $3) }
 // | yield_expr { $1 } TODO: support yield
 
-// path_expr:
+path_expr:
+| path_in_expr { PathInExpr ($1) }
+| qualified_path_in_expr { QualifiedPathInExpr ($1) }
+
+path_in_expr:
+| PATH_SEP path_expr_segment path_expr_segments { $2 :: $3 }
+| path_expr_segment path_expr_segments { $1 :: $2 }
+
+path_expr_segments:
+| PATH_SEP path_expr_segment path_expr_segments { $2 :: $3 }
+| { [] }
+
+path_expr_segment:
+| path_ident_segment { PathIdentSegment $1 }
+| path_ident_segment PATH_SEP generic_args { PathExprSegment ($1, $3) }
+
+path_ident_segment:
+| IDENT { PathIdent $1 }
+| SUPER { Super }
+| SELF { Self }
+| CRATE { Crate }
+
+generic_args:
+| LANGLE RANGLE { [] }
+| LANGLE generic_arg_list RANGLE { $2 }
+
+generic_arg_list:
+| generic_arg COMMA generic_arg_list { $1 :: $3 }
+
+generic_arg:
+| ty { TyArg $1 }
+// TODO: refactor to GenericArgsConst
+| literal_expr { LitArg $1 }
+| UNDERSCORE literal_expr { LitArg $2 }
+
+qualified_path_in_expr:
+| qualified_path_type PATH_SEP path_expr_segment path_expr_segments { QualifiedPath ($1, $3 :: $4) }
+
+qualified_path_type:
+| LANGLE ty RANGLE { $2 }
+| LANGLE ty AS ty RANGLE { $2 }
 
 return_expr:
 | RETURN expr { Return (Some $2) }

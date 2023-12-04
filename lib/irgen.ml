@@ -147,7 +147,45 @@ and ir_of_expr (expression: expr) : ir_expr =
     (* | Array x -> IRArray x
     | Custom x -> IRCustom x *)
     )
+  | PathExpr path -> ir_of_path_expr path
+  | QualifiedPathExpr qualified_path -> ir_of_qualified_path qualified_path
+  | StructInit (name, fields) -> IRStructInit (name, List.map (fun (name, expr) -> (name, ir_of_expr expr)) fields)
+  (* | EnumInit (name, variant, exprs) -> IREnumInit (name_of_segment name, variant, List.map ir_of_expr exprs) *)
+  (* | Lambda (params, body) -> IRLambda (List.map ir_of_param params, List.map ir_of_stmt body) *)
+  (* | ArrayExpr exprs -> IRArrayExpr (List.map ir_of_expr exprs) *)
+  (* | IndexExpr (expr, index) -> IRIndexExpr (ir_of_expr expr, ir_of_expr index)
+  | Negation expr -> IRNegation (ir_of_expr expr)
+  | Not expr -> IRNot (ir_of_expr expr)
+  | Borrow expr -> IRBorrow (ir_of_expr expr)
+  | BorrowMut expr -> IRBorrowMut (ir_of_expr expr)
+  | Deref expr -> IRDeref (ir_of_expr expr)
+  | ErrorProp expr -> IRErrorProp (ir_of_expr expr)
+  | CompoundAssign (op, left, right) -> IRCompoundAssign (ir_of_binop op, ir_of_expr left, ir_of_expr right)
+  | TupleExpr exprs -> IRTupleExpr (List.map ir_of_expr exprs)
+  | TupleIndexExpr (expr, index) -> IRTupleIndexExpr (ir_of_expr expr, index)
+  | MethodCall (expr, name, args) -> IRMethodCall (ir_of_expr expr, name, List.map ir_of_expr args)
+  | Return (Some expr) -> IRReturn (ir_of_expr expr)
+  | Return None -> IRReturn (IRLiteral (IRInt 0))
+  | FieldAccess (expr, name) -> IRFieldAccess (ir_of_expr expr, name) *)
+  (* | RangeExpr expr -> match expr with
+    | Range (start, end) -> IRRangeExpr (ir_of_expr start, ir_of_expr end)
+    | RangeInclusive (start, end) -> IRRangeInclusiveExpr (ir_of_expr start, ir_of_expr end)
+    | RangeFrom (start) -> IRRangeFromExpr (ir_of_expr start)
+    | RangeTo (end) -> IRRangeToExpr (ir_of_expr end)
+    | Range (start, end) -> IRRangeExpr (ir_of_expr start, ir_of_expr end) *)
   | _ -> failwith "Expr: Not implemented"
+
+and ir_of_path_expr (path_expr: path_expr) : ir_expr =
+  match path_expr with
+  | PathInExpr path -> ir_of_path path
+  | _ -> failwith "PathExpr: Not implemented"
+
+and ir_of_path (_path: path) : ir_expr =
+  failwith "Path: Not implemented"
+
+and ir_of_qualified_path (qualified_path: qualified_path) : ir_expr =
+  match qualified_path with
+  | _ -> failwith "QualifiedPath: Not implemented"
 
 and ir_of_binop (binop: binop) : ir_binop =
   match binop with

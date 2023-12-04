@@ -31,6 +31,9 @@ mod baz {
 // }
 
 fn main() -> u32 {
+    let b = 20;
+    let a = c;
+    // let some_constructor = Some::<u32>;
     // simple array w/ 3 elements
     // TODO: add support for arrays (sema and codegen)
     // let arr = [1, 2, 3];

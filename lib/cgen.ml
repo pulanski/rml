@@ -26,6 +26,19 @@ let rec emit_c_expr = function
   | IRTensor (_dims, values) ->
       let values_c = String.concat ", " (List.map emit_c_expr values) in
       Printf.sprintf "tensor(%s) TODO: impl me" values_c
+  | IRStructInit (struct_name, fields) ->
+      let fields_c = String.concat ", " (List.map (fun (name, expr) -> name ^ " = " ^ emit_c_expr expr) fields) in
+      Printf.sprintf "(struct %s) { %s }" struct_name fields_c
+  | IREnumInit (enum_name, variant_name, _expr) ->
+      Printf.sprintf "(enum %s) %s" enum_name variant_name
+  | IRLambda (params, body) ->
+      let params_str = String.concat ", " (List.map (fun p -> (emit_c_type p.param_type) ^ " " ^ p.name) params) in
+      let body_c = String.concat "\n  " (List.map emit_c_stmt body) in
+      Printf.sprintf "(%s) {\n  %s\n}" params_str body_c
+  | IRRange (start, end_) ->
+      let start_c = emit_c_expr start in
+      let end_c = emit_c_expr end_ in
+      Printf.sprintf "range(%s, %s)" start_c end_c
   | IRLiteral x ->
     match x with
     | IRInt x -> string_of_int x
@@ -58,7 +71,7 @@ and emit_c_binop = function
   | IRGeq -> ">="
   (* Add cases for other binary operators *)
 
-let rec emit_c_stmt = function
+and emit_c_stmt = function
   | IRExpr expr -> emit_c_expr expr ^ ";"
   | IRReturn expr -> "return " ^ emit_c_expr expr ^ ";"
   | IRVarDecl (name, expr) ->
