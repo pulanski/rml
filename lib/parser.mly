@@ -49,9 +49,14 @@ item:
 function_item:
   | attributes func { FunctionItem { $2 with func_attributes = $1 } }
 
+// func:
+// | FN IDENT LPAREN params RPAREN RARROW return_type block {
+//     { proto = { name = $2; params = $4; return_type = $7 }; body = $8; func_attributes = [] }
+// }
 func:
 | FN IDENT LPAREN params RPAREN RARROW return_type block {
-    { proto = { name = $2; params = $4; return_type = $7 }; body = $8; func_attributes = [] }
+    let modified_block = transform_last_expr_to_return $8 in
+    { proto = { name = $2; params = $4; return_type = $7 }; body = modified_block; func_attributes = [] }
 }
 
 params:
@@ -136,7 +141,7 @@ module_def:
 
 /* Use Declarations */
 use_decl:
-  | USE use_tree SEMICOLON { UseDecl $2 }
+  | USE use_tree SEMICOLON { $2 }
 
 use_tree:
   | simple_path { SimplePathUseTree $1 }
@@ -176,10 +181,13 @@ expr:
 // | loop_expr { $1 } TODO: support loop
 | range_expr { RangeExpr ($1) }
 | return_expr { $1 }
-// | underscore_expr { $1 } TODO: support underscore
+| underscore_expr { $1 }
 // | macro_invocation { $1 } TODO: support macro invocations
 // | IDENT LBRACE field_init_list RBRACE { StructInit ($1, $3) }
 // | yield_expr { $1 } TODO: support yield
+
+underscore_expr:
+| UNDERSCORE { Underscore }
 
 break_expr:
 | BREAK { Break }

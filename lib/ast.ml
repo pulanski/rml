@@ -6,20 +6,18 @@ and item =
   | EnumItem of enum_def
   | TraitItem of trait_def
   | ModuleItem of module_def
-  | UseItem of use_decl
+  | UseItem of use_tree
   | TypeAliasItem of type_alias
 
 and type_alias =
   | TypeAlias of string * ty
-
-and use_decl = use_tree
 
 and use_tree =
   | SimplePathUseTree of simple_path
   | NestedUseTree of simple_path * use_tree list
   | GlobUseTree of simple_path
   | RenamedUseTree of simple_path * string
-  | UseDecl of use_tree
+  (* | UseDecl of use_tree *)
 
 and case =
   | Case of pattern * stmt list
@@ -197,6 +195,7 @@ and expr =
   | Borrow of expr
   | BorrowMut of expr
   | Deref of expr
+  | Underscore
   | ErrorProp of expr
   | CompoundAssign of binop * expr * expr
   | TupleExpr of expr list
@@ -266,3 +265,9 @@ and tensor_type = {
 }
 
 and shape = int list
+
+let transform_last_expr_to_return stmt_list =
+  match List.rev stmt_list with
+  | Expr (Return _) :: _ -> stmt_list  (* If last expr is already a return, do nothing *)
+  | Expr expr :: rest -> List.rev (Expr (Return (Some expr)) :: rest)  (* Wrap last expr in return *)
+  | _ -> stmt_list  (* No transformation if last stmt is not an expr *)
