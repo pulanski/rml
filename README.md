@@ -1,9 +1,10 @@
-# Rust-to-C/JS Transpiler
+# Rust-to-C Transpiler
+
+**NOTE**: This project is very much me playing around w/ and learning OCaml
 
 ## Overview
 
-<!--The current implementation provides a foundation for a strongly typed, compiled language with a focus on clear syntax and powerful features. -->
-Transpiler designed to convert Rust source code into C and JavaScript.
+Transpiler designed to convert Rust source code into C.
 
 ## Current State of Implementation
 
@@ -12,7 +13,7 @@ As of the latest release, the compiler includes the following components and fea
 ### Rust Input Parsing
 
 - Parses Rust source code, handling its syntax and semantics.
-<!-- - **TODO:** Supports core Rust features like ownership, borrowing, enums, and pattern matching to a certain extent. -->
+- **TODO:** Supports core Rust features like ownership, borrowing, enums, and pattern matching to a certain extent.
 
 ### Lexer and Parser
 
